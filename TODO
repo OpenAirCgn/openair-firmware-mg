@@ -1,0 +1,9 @@
+
+
+- scour LIBS for unecessary includes:
+   - restrict CA's to those actually used, potentially add "own"
+
+- move some functionality into libs, or reuse functions from libs:
+	- bme sensor (lib exists)
+	- quadsense / noisemeter -> possibly externalize
+	- ADC create lib
