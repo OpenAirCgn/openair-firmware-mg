@@ -1,39 +1,59 @@
-/*
- * Copyright (c) 2014-2018 Cesanta Software Limited
- * All rights reserved
- *
- * Licensed under the Apache License, Version 2.0 (the ""License"");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an ""AS IS"" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+
+#include <stdio.h>
 
 #include "mgos.h"
+#include "quadsense.h"
+#include "openairboard.h"
+
+#define PM_UART 2
+
+
 
 static void timer_cb(void *arg) {
-  static bool s_tick_tock = false;
-  LOG(LL_INFO,
-      ("%s uptime: %.2lf, RAM: %lu, %lu free", (s_tick_tock ? "Tick" : "Tock"),
-       mgos_uptime(), (unsigned long) mgos_get_heap_size(),
-       (unsigned long) mgos_get_free_heap_size()));
-  s_tick_tock = !s_tick_tock;
-#ifdef LED_PIN
-  mgos_gpio_toggle(LED_PIN);
-#endif
   (void) arg;
+  openair_tick();
+  if (mgos_sys_config_get_openair_quadsense_en()) {
+    quadsense_tick();
+  }
+}
+
+static void handle_pm_data(int uart_no, void *arg) {
+  static struct mbuf lb = {0};
+  size_t rx_av = mgos_uart_read_avail(uart_no);
+  if (rx_av > 0) {
+    mgos_uart_read_mbuf(uart_no, &lb, rx_av);
+    LOG(LL_INFO, ("Got data from PM\n"));
+    mbuf_clear(&lb);
+  }
 }
 
 enum mgos_app_init_result mgos_app_init(void) {
-#ifdef LED_PIN
-  mgos_gpio_setup_output(LED_PIN, 0);
-#endif
-  mgos_set_timer(1000 /* ms */, MGOS_TIMER_REPEAT, timer_cb, NULL);
+  LOG(LL_INFO, ("OpenAir starting..."));
+
+  openair_init();
+  //openair_enable_module(2, true); //assume Quadsense is connected to it. TODO: Config
+
+  if (mgos_sys_config_get_openair_quadsense_en()) {
+    quadsense_init();
+  }
+
+
+//  //init PM sensor UART
+//  struct mgos_uart_config ucfg;
+//  mgos_uart_config_set_defaults(PM_UART, &ucfg);
+//  ucfg.baud_rate = 96000;
+//  ucfg.num_data_bits = 8;
+//  ucfg.parity = MGOS_UART_PARITY_NONE;
+//  ucfg.stop_bits = MGOS_UART_STOP_BITS_1;
+//  if (!mgos_uart_configure(PM_UART, &ucfg)) {
+//    return MGOS_APP_INIT_ERROR;
+//  }
+//  mgos_uart_set_dispatcher(PM_UART, handle_pm_data, NULL /* arg */);
+//  mgos_uart_set_rx_enabled(PM_UART, true);
+
+
+  mgos_set_timer(150 /* ms */, true /* repeat */, timer_cb, NULL);
   return MGOS_APP_INIT_SUCCESS;
 }
+
+// vim: et:sw=2:ts=2

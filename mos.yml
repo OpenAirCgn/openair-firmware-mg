@@ -19,11 +19,16 @@ filesystem:
   - fs
 
 config_schema:
+  - ["i2c.enable", true]
+  - ["i2c.debug", false]
+  - ["i2c.sda_gpio", 18]
+  - ["i2c.scl_gpio", 19]
   - ["openair", "o", { title: "OpenAir config" }]
-  - ["openair.eeprom_present", "b", {title: "EEPROM installed"}]                
-  - ["openair.mics_4514_present", "b", {title: "MICS installed"}]                
-  - ["openair.quadsense_present", "b", {title: "Quadsenseboard installed"}]                
-  - ["openair.si_7006_present", "b", {title: "Si 7006 temp/humidity installed"}]                
+  - ["openair.eeprom_enable", "b", false, {title: "EEPROM installed"}]                
+  - ["openair.mics_4514_en", "b", false, {title: "MICS installed"}]
+  - ["openair.quadsense_en", "b", true, {title: "Quadsenseboard installed"}]
+  - ["openair.quadsense_idx", "i", 2, {title: "Quadsenseboard expansion module port"}]
+  - ["openair.si_7006_en", "b", false, {title: "Si 7006 temp/humidity installed"}]
 
 libs:
   - origin: https://github.com/mongoose-os-libs/boards
