@@ -24,11 +24,13 @@ config_schema:
   - ["i2c.sda_gpio", 18]
   - ["i2c.scl_gpio", 19]
   - ["openair", "o", { title: "OpenAir config" }]
-  - ["openair.eeprom_enable", "b", false, {title: "EEPROM installed"}]                
+  - ["openair.eeprom_enable", "b", false, {title: "EEPROM installed"}]
+  - ["openair.fan_speed", "i", 127, {title: "Speed of circulation fan"}]
   - ["openair.mics_4514_en", "b", false, {title: "MICS installed"}]
   - ["openair.quadsense_en", "b", true, {title: "Quadsenseboard installed"}]
   - ["openair.quadsense_idx", "i", 2, {title: "Quadsenseboard expansion module port"}]
   - ["openair.si_7006_en", "b", false, {title: "Si 7006 temp/humidity installed"}]
+  - ["openair.tick_interval", "i", 150, {title: "tick interval in ms"}]
 
 libs:
   - origin: https://github.com/mongoose-os-libs/boards
@@ -38,6 +40,7 @@ libs:
   - origin: https://github.com/mongoose-os-libs/rpc-uart
   - origin: https://github.com/mongoose-os-libs/rpc-ws
   - origin: https://github.com/mongoose-os-libs/http-server
+  - origin: https://github.com/mongoose-os-libs/pwm
 
 # Used by the mos tool to catch mos binaries incompatible with this file format
 manifest_version: 2017-09-29

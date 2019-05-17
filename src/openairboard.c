@@ -1,4 +1,5 @@
 #include "openairboard.h"
+#include "pwmfan.h"
 
 #define MOD1_EN_PIN 12
 #define MOD2_EN_PIN 13
@@ -21,6 +22,9 @@ void openair_init() {
   mgos_gpio_write(LED_PIN, 0);
   mgos_gpio_set_mode(EXTLED_PIN, MGOS_GPIO_MODE_OUTPUT);
   mgos_gpio_write(EXTLED_PIN, 0);
+
+  // setup fan
+  fan_init();
 }
 
 void openair_enable_module(uint8_t module, bool on) {
@@ -47,5 +51,7 @@ void openair_tick() {
   mgos_gpio_write(LED_PIN, level);
   mgos_gpio_write(EXTLED_PIN, level);
   level ^= 1;
+
+  fan_tick();
 }
 // vim: et:sw=2:ts=2
