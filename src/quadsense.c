@@ -10,14 +10,22 @@ static uint8_t adc_addr = 0;
 static bool id1 = false;
 static int adc_values[8] = {0,0,0,0,0,0,0,0};
 
-void quadsense_init() {
+alphasense_cb alpha_cb;
+bme280_cb bme_cb;
+
+//void quadsense_init() {
+void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
+
+  alpha_cb = a_cb;
+  bme_cb = b_cb;
+
   i2c = mgos_i2c_get_global();
   int modIdx = mgos_sys_config_get_openair_quadsense_idx();
 
   switch (modIdx) {
     case 1: adc_addr = 0x16; break;
     case 2: adc_addr = 0x14; id1 = true; break;
-    default: 
+    default:
       LOG(LL_ERROR, ("Quadsense init: Invalid module index %i", modIdx));
       break;
   }
@@ -29,7 +37,7 @@ void quadsense_init() {
     LOG(LL_ERROR, ("failed bme280_read_calib()"));
     return;
   }
-  
+
   ok = bme280_set_mode(i2c, false,     //TODO: ID must be set for new HW
     MEASURE_OS4,
     MEASURE_OS4,
@@ -57,6 +65,16 @@ bool quadsense_tick() {
     if (chan==7) {
       for (int i=0; i<8; i++) {
         LOG(LL_INFO, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
+        alpha_cb(
+            adc_values[0],
+            adc_values[1],
+            adc_values[2],
+            adc_values[3],
+            adc_values[4],
+            adc_values[5],
+            adc_values[6],
+            adc_values[7]
+            );
       }
      LOG(LL_INFO, ("---"));
     }
