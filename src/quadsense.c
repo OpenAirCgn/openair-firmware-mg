@@ -5,6 +5,7 @@
 
 #include "stdio.h"
 
+static bool initialized = false;
 static struct mgos_i2c *i2c;
 static uint8_t adc_addr = 0;
 static bool id1 = false;
@@ -50,12 +51,16 @@ void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
     LOG(LL_ERROR, ("failed bme_set_mode"));
     return;
   }
+  initialized = true;
   LOG(LL_INFO, ("quadsense initialized"));
 }
 
 #define VREF 4.11
 
 bool quadsense_tick() {
+  if (!initialized) {
+    return false;
+  }
   uint8_t chan;
   int val;
   bool ok = ltc2497_read(i2c, adc_addr, &chan, &val);
@@ -76,7 +81,6 @@ bool quadsense_tick() {
             adc_values[7]
             );
       }
-     LOG(LL_INFO, ("---"));
     }
   } else {
     LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
@@ -84,7 +88,7 @@ bool quadsense_tick() {
 
   ok = bme280_read_data(i2c, false); //TODO: ID must be set for new HW
   if (!ok) {
-    LOG(LL_ERROR, ("bm3280 read failed: %d",ok));
+    LOG(LL_ERROR, ("bme280 read failed: %d",ok));
   }
   return ok;
 }

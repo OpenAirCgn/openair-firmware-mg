@@ -5,9 +5,11 @@
 
 #include "openairboard.h"
 #include "quadsense.h"
+#include "sds011.h"
 #include "broker.h"
+#include "sds011.h"
 
-
+static uint32_t ticks = 0;
 
 static void alpha_cb(
     int alpha1,
@@ -29,17 +31,38 @@ static void alpha_cb(
   oa_broker_push(oa_alpha_8, alpha8);
 }
 
-static uint32_t ticks = 0;
+
+void bme_cb(
+    uint32_t p_raw,
+    float p,
+    uint32_t t_raw,
+    float t,
+    uint32_t h_raw,
+    float h
+    ) {
+    oa_broker_push(oa_bme_pressure_raw, p_raw);
+    oa_broker_push(oa_bme_pressure, (uint32_t)(p * 100));
+    oa_broker_push(oa_bme_tmp_raw, t_raw);
+    oa_broker_push(oa_bme_tmp, (uint32_t)((t + 273.15) * 1000));
+    oa_broker_push(oa_bme_humidity_raw, h_raw);
+    oa_broker_push(oa_bme_humidity, (uint32_t)(h*10));
+}
+
+static void sds_cb(uint32_t pm25, uint32_t pm10) {
+  oa_broker_push(oa_sds_pm25, pm25);
+  oa_broker_push(oa_sds_pm10, pm10);
+}
 
 static void timer_cb(void *arg) {
   (void) arg;
   openair_tick();
+
   if (mgos_sys_config_get_openair_quadsense_en()) {
     quadsense_tick();
   }
-
-  oa_broker_push(oa_time, ticks++);
-
+  if (mgos_sys_config_get_openair_sds011_en()) {
+    sds011_tick();
+  }
 }
 
 enum mgos_app_init_result mgos_app_init(void) {
@@ -48,9 +71,12 @@ enum mgos_app_init_result mgos_app_init(void) {
   openair_init();
   oa_broker_init();
 
-
   if (mgos_sys_config_get_openair_quadsense_en()) {
-    quadsense_init(&alpha_cb, NULL);
+    quadsense_init(&alpha_cb, &bme_cb);
+  }
+
+  if (mgos_sys_config_get_openair_sds011_en()) {
+    sds011_init(&sds_cb);
   }
 
   mgos_set_timer(150 /* ms */, true /* repeat */, timer_cb, NULL);

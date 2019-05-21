@@ -15,14 +15,16 @@ typedef enum {
   oa_alpha_7,
   oa_alpha_8,
   oa_bme_pressure_raw,
-  oa_bme_pressure,
+  oa_bme_pressure,  //pascal
   oa_bme_tmp_raw,
-  oa_bme_tmp,
+  oa_bme_tmp,       //millikelvin
   oa_bme_humidity_raw,
-  oa_bme_humidity
+  oa_bme_humidity,  //permille rh
+  oa_sds_pm25,    //PM2.5 in ng/m3
+  oa_sds_pm10,    //PM10 in ng/m3
 } oa_tag;
 
-#define NUM_VALUES 15
+#define NUM_VALUES 17
 
 
 typedef struct {
