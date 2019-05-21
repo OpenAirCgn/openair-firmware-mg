@@ -69,6 +69,8 @@ bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin) {
     calib.dig_H4 = (calib2[3] << 4) | (calib2[4] & 0x0f);
     calib.dig_H5 = (calib2[4] >> 4) | (calib2[5] << 4);
     calib.dig_H6 = calib2[6];
+  } else {
+    mgos_i2c_stop(i2c);
   }
   return ok;
 }
@@ -181,3 +183,4 @@ void bme280_compensate(int32_t temp, int32_t press, int32_t hum) {
   LOG(LL_INFO, ("press %f temp %f hum %f", pressure, temperature, humidity));
   //TODO: return values
 }
+// vim: et:sw=2:ts=2
