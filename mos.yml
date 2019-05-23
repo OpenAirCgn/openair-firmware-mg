@@ -23,6 +23,8 @@ config_schema:
   - ["i2c.debug", false]
   - ["i2c.sda_gpio", 18]
   - ["i2c.scl_gpio", 19]
+  - ["wifi.ap.ssid", "OpenAir_????????????"]
+  - ["wifi.ap.pass", "openair123"]
   - ["openair", "o", { title: "OpenAir config" }]
   - ["openair.eeprom_enable", "b", false, {title: "EEPROM installed"}]
   - ["openair.fan_speed", "i", 255, {title: "Speed of circulation fan"}]

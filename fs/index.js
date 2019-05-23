@@ -224,7 +224,9 @@ function diff(obj=config, key="") {
 function save () {
   let diffs = diff(config)
   if (diffs !== null) {
-    send("Config.Set", {config: diffs}, result => {
+    let reboot = document.querySelector("#reboot") 
+    reboot = reboot ? reboot.checked : false
+    send("Config.Set", {config: diffs, save:true, reboot: reboot}, result => {
       if (result.saved) {
         populateInterface()
       } else {
@@ -263,3 +265,5 @@ async function test() {
   let result = JSON.parse(response_data).result;
   _populateInterface(result);
 }
+
+// vim: et:sw=2:ts=2
