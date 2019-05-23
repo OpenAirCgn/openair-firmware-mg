@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Config Test.</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <script src="index.js"></script>
+
+    <script>
+      window.onload = main;
+    </script>
+  </head>
+  <body>
+    <h1>Open Air Config</h1>
+    <form>
+	<div id="main"></div>
+	<div id="save_panel">
+		<span><input type="button" value="save" onclick="save()"/></span>
+		<span> Reboot:<input id="reboot" type="checkbox" value="reboot"/></span>
+		<div><input type="button" value="cancel" onclick="cancel()"/></div>
+	</div>
+    </form>
+  </body>
+</html>
