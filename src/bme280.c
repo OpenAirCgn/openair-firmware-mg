@@ -45,6 +45,29 @@ typedef struct {
 
 static BME280_Calib calib = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+bool bme280_init(struct mgos_i2c * i2c) {
+
+  bool ok = bme280_read_calib(i2c, false);  //TODO: ID must be set for new HW
+  if (!ok) {
+    LOG(LL_ERROR, ("failed bme280_read_calib()"));
+    return ok;
+  }
+
+  ok = bme280_set_mode(i2c, false,     //TODO: ID must be set for new HW
+    MEASURE_OS4,
+    MEASURE_OS4,
+    MEASURE_OS4,
+    MODE_NORMAL,
+    STANDBY_62MS5,
+    FILTER_2);
+
+  if (!ok) {
+    LOG(LL_ERROR, ("failed bme_set_mode"));
+  }
+
+  return ok;
+}
+
 bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin) {
   uint8_t addr = BME280_BASE_ADDR + (addrPin ? 1 : 0);
   uint8_t calib1[26]; // 0x88..0xa1

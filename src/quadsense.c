@@ -5,7 +5,9 @@
 
 #include "stdio.h"
 
-static bool initialized = false;
+static bool alpha_initialized = false;
+static bool bme_initialized = false;
+
 static struct mgos_i2c *i2c;
 static uint8_t adc_addr = 0;
 static bool id1 = false;
@@ -31,70 +33,57 @@ void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
       break;
   }
   openair_enable_module(modIdx, true);
-
-
-  bool ok = bme280_read_calib(i2c, false);  //TODO: ID must be set for new HW
-  if (!ok) {
-    LOG(LL_ERROR, ("failed bme280_read_calib()"));
-    return;
-  }
-
-  ok = bme280_set_mode(i2c, false,     //TODO: ID must be set for new HW
-    MEASURE_OS4,
-    MEASURE_OS4,
-    MEASURE_OS4,
-    MODE_NORMAL,
-    STANDBY_62MS5,
-    FILTER_2);
-
-  if (!ok) {
-    LOG(LL_ERROR, ("failed bme_set_mode"));
-    return;
-  }
-  initialized = true;
-  LOG(LL_INFO, ("quadsense initialized"));
+  alpha_initialized = true;
+  LOG(LL_DEBUG, ("quadsense + alpha initialized"));
+  
+  bme_initialized = bme280_init(i2c);
+  LOG(LL_INFO, ("quadsense + bme280 initialized"));
 }
 
 #define VREF 4.11
 
 bool quadsense_tick() {
-  if (!initialized) {
-    return false;
-  }
-  uint8_t chan;
-  int val;
-  bool ok = ltc2497_read(i2c, adc_addr, &chan, &val);
+  bool ok = false;
+  if (alpha_initialized) {
+    uint8_t chan;
+    int val;
+    ok = ltc2497_read(i2c, adc_addr, &chan, &val);
 
-  if (ok) {
-    adc_values[chan] = val;
-    if (chan==7) {
-      for (int i=0; i<8; i++) {
-        LOG(LL_DEBUG, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
-        alpha_cb(
-            adc_values[0],
-            adc_values[1],
-            adc_values[2],
-            adc_values[3],
-            adc_values[4],
-            adc_values[5],
-            adc_values[6],
-            adc_values[7]
-            );
+    if (ok) {
+      adc_values[chan] = val;
+      if (chan==7) {
+        for (int i=0; i<8; i++) {
+          LOG(LL_DEBUG, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
+          alpha_cb(
+              adc_values[0],
+              adc_values[1],
+              adc_values[2],
+              adc_values[3],
+              adc_values[4],
+              adc_values[5],
+              adc_values[6],
+              adc_values[7]
+              );
+        }
       }
+    } else {
+      LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
+    }
+  }
+  
+  if (bme_initialized) { 
+    uint32_t temp, press, hum;
+    ok = bme280_read_data(i2c, false, &temp, &press, &hum); //TODO: ID must be set for new HW
+    if (ok && bme_cb) {
+      float realTemp, realPress, realHum;
+      bme280_compensate(temp, press, hum, &realTemp, &realPress, &realHum);
+      bme_cb(press, realPress, temp, realTemp, hum, realHum);
+    }
+    if (!ok) {
+      LOG(LL_ERROR, ("bme280 read failed: %d",ok));
     }
   } else {
-    LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
-  }
-
-  uint32_t temp, press, hum;
-  ok = bme280_read_data(i2c, false, &temp, &press, &hum); //TODO: ID must be set for new HW
-  if (ok && bme_cb) {
-    float realTemp, realPress, realHum;
-    bme280_compensate(temp, press, hum, &realTemp, &realPress, &realHum);
-    bme_cb(press, realPress, temp, realTemp, hum, realHum);
-  }
-  if (!ok) {
-    LOG(LL_ERROR, ("bme280 read failed: %d",ok));
+    bme_initialized = bme280_init(i2c);
   }
   return ok;
 }

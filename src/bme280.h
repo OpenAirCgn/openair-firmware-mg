@@ -4,6 +4,8 @@
 #include "mgos.h"
 #include "mgos_i2c.h"
 
+bool bme280_init();
+
 bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin);
 
 bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum);
