@@ -46,11 +46,18 @@ void openair_enable_module(uint8_t module, bool on) {
   }
 }
 
+static uint32_t statusPattern = 0x55555555;
+static uint8_t statusShift = 0;
+
+void openair_setStatusPattern(uint32_t pattern) {
+  statusPattern = pattern;
+}
+
 void openair_tick() {
-  static int level = 1;
+  statusShift = (statusShift+1) & 0x1f;
+  bool level = statusPattern & (0x80000000 >> statusShift);
   mgos_gpio_write(LED_PIN, level);
   mgos_gpio_write(EXTLED_PIN, level);
-  level ^= 1;
 
   fan_tick();
 }
