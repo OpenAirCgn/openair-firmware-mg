@@ -1,4 +1,5 @@
 #include "bme280.h"
+#include "openairboard.h"
 
 #define BME280_BASE_ADDR 0x76 /* add 1 if address pin is set */
 #define BME280_CALIB1_BASE 0x88
@@ -76,7 +77,7 @@ bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin) {
 }
 
 
-bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin) {
+bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum) {
   uint8_t addr = BME280_BASE_ADDR + (addrPin ? 1 : 0);
   uint8_t data[BME280_DATA_SIZE];  // 0xf7..0xfe
   bool ok = mgos_i2c_read_reg_n(i2c, addr, BME280_DATA_BASE, BME280_DATA_SIZE, &(data[0]));
@@ -85,7 +86,9 @@ bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin) {
     uint32_t temp = (data[5] >> 4) | (data[4] << 4) | (data[3] << 12);
     uint32_t hum = data[7] | (data[6] << 8);
     LOG(LL_INFO, ("press %i temp %i hum %i", press, temp, hum));
-    bme280_compensate(temp, press, hum);
+    if (outTemp) { *outTemp = temp; }
+    if (outPress) { *outPress = press; }
+    if (outHum) { *outHum = hum; }
   }
   return ok;
 }
@@ -137,7 +140,8 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
 }
 
 //formulas taken from datasheet
-void bme280_compensate(int32_t temp, int32_t press, int32_t hum) {
+void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
+  float *outTemp, float *outPress, float *outHum) {
 
   int32_t t_fine;
   float temperature = 0.0f;
@@ -181,6 +185,16 @@ void bme280_compensate(int32_t temp, int32_t press, int32_t hum) {
   humidity = (v_x1_u32r>>12) / 1024.0;
 
   LOG(LL_INFO, ("press %f temp %f hum %f", pressure, temperature, humidity));
-  //TODO: return values
+  if (outPress) {
+    *outPress = pressure;
+  }
+
+  if (outTemp) {
+    *outTemp = temperature;
+  }
+
+  if (outHum) {
+    *outHum = humidity;
+  }
 }
 // vim: et:sw=2:ts=2

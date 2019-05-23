@@ -11,8 +11,8 @@ static uint8_t adc_addr = 0;
 static bool id1 = false;
 static int adc_values[8] = {0,0,0,0,0,0,0,0};
 
-alphasense_cb alpha_cb;
-bme280_cb bme_cb;
+static alphasense_cb alpha_cb;
+static bme280_cb bme_cb;
 
 //void quadsense_init() {
 void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
@@ -86,7 +86,13 @@ bool quadsense_tick() {
     LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
   }
 
-  ok = bme280_read_data(i2c, false); //TODO: ID must be set for new HW
+  uint32_t temp, press, hum;
+  ok = bme280_read_data(i2c, false, &temp, &press, &hum); //TODO: ID must be set for new HW
+  if (ok && bme_cb) {
+    float realTemp, realPress, realHum;
+    bme280_compensate(temp, press, hum, &realTemp, &realPress, &realHum);
+    bme_cb(press, realPress, temp, realTemp, hum, realHum);
+  }
   if (!ok) {
     LOG(LL_ERROR, ("bme280 read failed: %d",ok));
   }

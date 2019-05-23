@@ -31,21 +31,13 @@ static void alpha_cb(
   oa_broker_push(oa_alpha_8, alpha8);
 }
 
-
-void bme_cb(
-    uint32_t p_raw,
-    float p,
-    uint32_t t_raw,
-    float t,
-    uint32_t h_raw,
-    float h
-    ) {
-    oa_broker_push(oa_bme_pressure_raw, p_raw);
-    oa_broker_push(oa_bme_pressure, (uint32_t)(p * 100));
-    oa_broker_push(oa_bme_tmp_raw, t_raw);
-    oa_broker_push(oa_bme_tmp, (uint32_t)((t + 273.15) * 1000));
-    oa_broker_push(oa_bme_humidity_raw, h_raw);
-    oa_broker_push(oa_bme_humidity, (uint32_t)(h*10));
+static void bme_cb(uint32_t p_raw, float p, uint32_t t_raw, float t, uint32_t h_raw, float h) {
+  oa_broker_push(oa_bme_pressure_raw, p_raw);
+  oa_broker_push(oa_bme_pressure, (uint32_t)(p * 100));
+  oa_broker_push(oa_bme_tmp_raw, t_raw);
+  oa_broker_push(oa_bme_tmp, (uint32_t)((t + 273.15) * 1000));
+  oa_broker_push(oa_bme_humidity_raw, h_raw);
+  oa_broker_push(oa_bme_humidity, (uint32_t)(h*10));
 }
 
 static void sds_cb(uint32_t pm25, uint32_t pm10) {

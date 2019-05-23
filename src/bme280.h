@@ -6,7 +6,7 @@
 
 bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin);
 
-bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin);
+bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum);
 
 typedef enum {
   MEASURE_OFF = 0,
@@ -51,6 +51,7 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
   BME280_Filter_Mode filter);
 
 
-void bme280_compensate(int32_t temp, int32_t press, int32_t hum);
+void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
+  float *outTemp, float *outPress, float *outHum);
 
 #endif

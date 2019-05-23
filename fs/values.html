@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sensor values</title>
+
+<style type="text/css">
+
+body, html {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size:1.4em;
+}  
+.sensorblock {
+  margin:10px;
+  padding:20px;
+  border: 1px solid #666;
+  background-color:#ffc;
+}
+
+.valname {
+  color:#666;
+  display: inline-block;
+  min-width: 30%;
+
+}
+
+.unit {
+  padding-left:5px;
+}
+
+.smallname {
+  font-size:0.7em;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.smallvalue {
+  font-size:0.7em;
+  font-weight: normal;
+  font-style: italic;
+}
+
+</style>
+
+<script type="text/javascript">
+  
+function pullValues() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'rpc/OpenAir.Current', true);
+  xhr.responseType = 'json';
+  xhr.onload = () => {
+    var status = xhr.status;
+    if (status === 200) {
+      parseValues(xhr.response);
+    } else {
+      alert("error: "+status);
+    }
+  };
+  xhr.send();
+};
+
+const OATag = {
+  oa_alpha_1: 1,
+  oa_alpha_2: 2,
+  oa_alpha_3: 3,
+  oa_alpha_4: 4,
+  oa_alpha_5: 5,
+  oa_alpha_6: 6,
+  oa_alpha_7: 7,
+  oa_alpha_8: 8,
+  oa_bme_pressure_raw: 9,
+  oa_bme_pressure: 10,  //pascal
+  oa_bme_tmp_raw: 11,
+  oa_bme_tmp: 12,       //millikelvin
+  oa_bme_humidity_raw: 13,
+  oa_bme_humidity: 14,  //permille rh
+  oa_sds_pm25: 15,    //PM2.5 in ng/m3
+  oa_sds_pm10: 16
+};
+
+//example: {"ts":8,"device_id":"esp32_0AA8F0","entries":[{"ts":0,"tag":0,"value":0},{"ts":0,"tag":1,"value":0},{"ts":0,"tag":2,"value":0},{"ts":0,"tag":3,"value":0},{"ts":0,"tag":4,"value":0},{"ts":0,"tag":5,"value":0},{"ts":0,"tag":6,"value":0},{"ts":0,"tag":7,"value":0},{"ts":0,"tag":8,"value":0},{"ts":0,"tag":9,"value":0},{"ts":0,"tag":10,"value":0},{"ts":0,"tag":11,"value":0},{"ts":0,"tag":12,"value":0},{"ts":0,"tag":13,"value":0},{"ts":0,"tag":14,"value":0},{"ts":0,"tag":15,"value":0},{"ts":0,"tag":16,"value":0}]}
+
+let currentValues = [];
+let history = [];
+
+function parseValues(json) {
+  history.push(currentValues.slice(0)); //put copy into history
+  if (history.length > 100) {
+    history.shift();
+  }
+  if (json && json.entries) {
+    const entries = json.entries;
+    for (let key in entries) {
+      let tag = entries[key].tag;
+      let value = entries[key].value;
+      currentValues[tag] = value;
+    }
+  }
+  updateUI();
+};
+
+function updateUI() {
+  console.log("current: "+JSON.stringify(currentValues));
+  let temperature = currentValues[OATag.oa_bme_tmp];
+  temperature = temperature ? ((temperature / 1000) - 273.15).toFixed(2) : "--";
+  document.querySelector("#temperature").textContent = temperature;
+
+  let temperatureRaw = currentValues[OATag.oa_bme_tmp_raw];
+  temperatureRaw = temperatureRaw ? temperatureRaw : "--";
+  document.querySelector("#temperatureraw").textContent = temperatureRaw; 
+
+  let pressure = currentValues[OATag.oa_bme_pressure];
+  pressure = pressure ? (pressure / 100).toFixed(1) : "--";
+  document.querySelector("#pressure").textContent = pressure; 
+
+  let pressureRaw = currentValues[OATag.oa_bme_pressure_raw];
+  pressureRaw = pressureRaw ? pressureRaw : "--";
+  document.querySelector("#pressureraw").textContent = pressureRaw; 
+
+  let humidity = currentValues[OATag.oa_bme_humidity];
+  humidity = humidity ? (humidity / 10).toFixed(1) : "--";
+  document.querySelector("#humidity").textContent = humidity; 
+
+  let humidityRaw = currentValues[OATag.oa_bme_humidity_raw];
+  humidityRaw = humidityRaw ? humidityRaw : "--";
+  document.querySelector("#humidityraw").textContent = humidityRaw; 
+
+  let pm25 = currentValues[OATag.oa_sds_pm25];
+  pm25 = pm25 ? (pm25/1000).toFixed(1) : "--";
+  document.querySelector("#pm25").textContent = pm25; 
+
+  let pm10 = currentValues[OATag.oa_sds_pm10];
+  pm10 = pm10 ? (pm10/1000).toFixed(1) : "--";
+  document.querySelector("#pm10").textContent = pm10; 
+
+  const adc2v = 0.000031356811523;
+  let as11 = currentValues[OATag.oa_alpha_1];
+  let as12 = currentValues[OATag.oa_alpha_2];
+  let as1 = (as11 && as12) ? ((as11 - as12)*adc2v).toFixed(4) : "--";
+  as11 = as11 ? as11 : "--";
+  as12 = as12 ? as12 : "--";
+  document.querySelector("#as1").textContent = as1; 
+  document.querySelector("#as11").textContent = as11; 
+  document.querySelector("#as12").textContent = as12; 
+
+  let as21 = currentValues[OATag.oa_alpha_3];
+  let as22 = currentValues[OATag.oa_alpha_4];
+  let as2 = (as21 && as22) ? ((as21 - as22)*adc2v).toFixed(4) : "--";
+  as21 = as21 ? as21 : "--";
+  as22 = as22 ? as22 : "--";
+  document.querySelector("#as2").textContent = as2; 
+  document.querySelector("#as21").textContent = as21; 
+  document.querySelector("#as22").textContent = as22; 
+
+  let as31 = currentValues[OATag.oa_alpha_5];
+  let as32 = currentValues[OATag.oa_alpha_6];
+  let as3 = (as31 && as32) ? ((as31 - as32)*adc2v).toFixed(4) : "--";
+  as31 = as31 ? as31 : "--";
+  as32 = as32 ? as32 : "--";
+  document.querySelector("#as3").textContent = as3; 
+  document.querySelector("#as31").textContent = as31; 
+  document.querySelector("#as32").textContent = as32; 
+
+  let as41 = currentValues[OATag.oa_alpha_7];
+  let as42 = currentValues[OATag.oa_alpha_8];
+  let as4 = (as41 && as42) ? ((as41 - as42)*adc2v).toFixed(4) : "--";
+  as41 = as41 ? as41 : "--";
+  as42 = as42 ? as42 : "--";
+  document.querySelector("#as4").textContent = as4; 
+  document.querySelector("#as41").textContent = as41; 
+  document.querySelector("#as42").textContent = as42; 
+
+  console.log("pm10: "+pm10+" pm25: "+pm25+" temp "+temperature+" press "+pressure+" humi "+humidity);
+}
+
+function start() {
+  pullValues();
+  window.setInterval(pullValues, 2000);
+};
+
+</script>
+
+</head>
+<body onload="start()">
+
+<div class="sensorblock">
+<span class="valname">Temperature:</span>
+<span id="temperature" class="value">--</span><span class="unit">&deg;C</span>
+<span class="smallname"> raw: </span>
+<span id="temperatureraw" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Humidity:</span>
+<span id="humidity" class="value">--</span><span class="unit">% RH</span>
+<span class="smallname"> raw: </span>
+<span id="humidityraw" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Pressure:</span>
+<span id="pressure" class="value">--</span><span class="unit">kPa</span>
+<span class="smallname"> raw: </span>
+<span id="pressureraw" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">PM2.5:</span>
+<span id="pm25" class="value">--</span><span class="unit">&micro;g/m&sup3;</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">PM10:</span>
+<span id="pm10" class="value">--</span><span class="unit">&micro;g/m&sup3;</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Alphasense1:</span>
+<span id="as1" class="value">--</span><span class="unit">V</span>
+<span class="smallname"> raw: </span>
+<span id="as11" class="smallvalue">--</span>
+<span class="smallname">, </span>
+<span id="as12" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Alphasense2:</span>
+<span id="as2" class="value">--</span><span class="unit">V</span>
+<span class="smallname"> raw: </span>
+<span id="as21" class="smallvalue">--</span>
+<span class="smallname">, </span>
+<span id="as22" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Alphasense3:</span>
+<span id="as3" class="value">--</span><span class="unit">V</span>
+<span class="smallname"> raw: </span>
+<span id="as31" class="smallvalue">--</span>
+<span class="smallname">, </span>
+<span id="as32" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Alphasense4:</span>
+<span id="as4" class="value">--</span><span class="unit">V</span>
+<span class="smallname"> raw: </span>
+<span id="as41" class="smallvalue">--</span>
+<span class="smallname">, </span>
+<span id="as42" class="smallvalue">--</span>
+</div>
+
+
+
+
+</body>
+</html>
