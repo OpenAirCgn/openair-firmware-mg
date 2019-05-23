@@ -13,11 +13,14 @@
     </script>
   </head>
   <body>
-    <h1>This is Config!</h1>
+    <h1>Open Air Config (TEST)</h1>
     <form>
-    	<div id="main"></div>
-      <input type="button" value="save" onclick="save()"/>
-      <input type="button" value="cancel" onclick="cancel()"/>
+	<div id="main"></div>
+	<div id="save_panel">
+		<span><input type="button" value="save" onclick="save()"/></span>
+		<span> Reboot:<input id="reboot" type="checkbox" value="reboot"/></span>
+		<div><input type="button" value="cancel" onclick="cancel()"/></div>
+	</div>
     </form>
   </body>
 </html>
