@@ -2,14 +2,13 @@
 #include <stdio.h>
 
 #include "mgos.h"
+#include "mgos_wifi.h"
 
 #include "openairboard.h"
 #include "quadsense.h"
 #include "sds011.h"
 #include "broker.h"
 #include "sds011.h"
-
-static uint32_t ticks = 0;
 
 static void alpha_cb(
     int alpha1,
@@ -45,8 +44,14 @@ static void sds_cb(uint32_t pm25, uint32_t pm10) {
   oa_broker_push(oa_sds_pm10, pm10);
 }
 
+static void check_connection() {
+  enum mgos_wifi_status status = mgos_wifi_get_status();
+  openair_setStatusPattern((status == MGOS_WIFI_IP_ACQUIRED) ? OA_BLINK_ONCE_PAUSE : OA_BLINK_TWICE_PAUSE);
+}
+
 static void timer_cb(void *arg) {
   (void) arg;
+  check_connection();
   openair_tick();
 
   if (mgos_sys_config_get_openair_quadsense_en()) {

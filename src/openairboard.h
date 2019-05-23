@@ -16,6 +16,16 @@ void openair_enable_module(uint8_t module, bool on);
 
 void openair_tick();
 
+/** set the LED blink pattern.
+@param pattern a 32 bit blink pattern. Shown from MSB to LSB */
+
+void openair_setStatusPattern(uint32_t pattern);
+
+/** these are just example patterns */
+#define OA_BLINK_ONCE_PAUSE 0x80000000
+#define OA_BLINK_TWICE_PAUSE 0xa000a000
+#define OA_BLINK_CONTINUOUSLY 0xaaaaaaaa
+
 #endif
 
 // vim: et:sw=2:ts=2
