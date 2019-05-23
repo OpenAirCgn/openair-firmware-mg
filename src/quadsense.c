@@ -69,7 +69,7 @@ bool quadsense_tick() {
     adc_values[chan] = val;
     if (chan==7) {
       for (int i=0; i<8; i++) {
-        LOG(LL_INFO, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
+        LOG(LL_DEBUG, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
         alpha_cb(
             adc_values[0],
             adc_values[1],

@@ -85,7 +85,7 @@ bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uin
     uint32_t press = (data[2] >> 4) | (data[1] << 4) | (data[0] << 12);
     uint32_t temp = (data[5] >> 4) | (data[4] << 4) | (data[3] << 12);
     uint32_t hum = data[7] | (data[6] << 8);
-    LOG(LL_INFO, ("press %i temp %i hum %i", press, temp, hum));
+    LOG(LL_DEBUG, ("press %i temp %i hum %i", press, temp, hum));
     if (outTemp) { *outTemp = temp; }
     if (outPress) { *outPress = press; }
     if (outHum) { *outHum = hum; }
@@ -184,7 +184,7 @@ void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
   v_x1_u32r = ((v_x1_u32r > 419430400) ? 419430400 : v_x1_u32r);
   humidity = (v_x1_u32r>>12) / 1024.0;
 
-  LOG(LL_INFO, ("press %f temp %f hum %f", pressure, temperature, humidity));
+  LOG(LL_DEBUG, ("press %f temp %f hum %f", pressure, temperature, humidity));
   if (outPress) {
     *outPress = pressure;
   }
