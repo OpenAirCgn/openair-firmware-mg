@@ -34,6 +34,9 @@ config_schema:
   - ["openair.quadsense_idx", "i", 2, {title: "Quadsenseboard expansion module port"}]
   - ["openair.si_7006_en", "b", false, {title: "Si 7006 temp/humidity installed"}]
   - ["openair.tick_interval", "i", 150, {title: "tick interval in ms"}]
+  - ["openair.tick_interval", "i", 150, {title: "tick interval in ms"}]
+  - ["openair.firehose_en", "b", true, {title: "enable immendiate udp dump of sensor values"}]
+  - ["openair.firehose_addr", "s", "192.168.4.2:7531", {title: "udp addr to dump to"}]
 
 libs:
   - origin: https://github.com/mongoose-os-libs/boards
