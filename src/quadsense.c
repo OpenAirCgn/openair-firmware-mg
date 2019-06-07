@@ -11,16 +11,20 @@ static bool bme_initialized = false;
 static struct mgos_i2c *i2c;
 static uint8_t adc_addr = 0;
 static bool id1 = false;
-static int adc_values[8] = {0,0,0,0,0,0,0,0};
 
+static int adc_values[8] = {0,0,0,0,0,0,0,0};
 static alphasense_cb alpha_cb;
 static bme280_cb bme_cb;
+
 
 //void quadsense_init() {
 void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
 
   alpha_cb = a_cb;
   bme_cb = b_cb;
+
+  LOG(LL_INFO, ("alpha_cb %p", alpha_cb));
+  LOG(LL_INFO, ("bme_cb %p", bme_cb));
 
   i2c = mgos_i2c_get_global();
   int modIdx = mgos_sys_config_get_openair_quadsense_idx();
@@ -70,7 +74,6 @@ bool quadsense_tick() {
       LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
     }
   }
-  
   if (bme_initialized) { 
     uint32_t temp, press, hum;
     ok = bme280_read_data(i2c, false, &temp, &press, &hum); //TODO: ID must be set for new HW
@@ -80,6 +83,7 @@ bool quadsense_tick() {
       bme_cb(press, realPress, temp, realTemp, hum, realHum);
     }
     if (!ok) {
+      bme_cb(0,0,0,0,0,0);
       LOG(LL_ERROR, ("bme280 read failed: %d",ok));
     }
   } else {

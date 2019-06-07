@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 
 #include "mgos.h"
@@ -11,6 +10,7 @@
 #include "sds011.h"
 #include "broker.h"
 #include "sds011.h"
+#include "si7006.h"
 
 
 static void alpha_cb(
@@ -34,17 +34,24 @@ static void alpha_cb(
 }
 
 static void bme_cb(uint32_t p_raw, float p, uint32_t t_raw, float t, uint32_t h_raw, float h) {
+
   oa_broker_push(oa_bme_pressure_raw, p_raw);
   oa_broker_push(oa_bme_pressure, (uint32_t)(p * 100));
-  oa_broker_push(oa_bme_tmp_raw, t_raw);
-  oa_broker_push(oa_bme_tmp, (uint32_t)((t + 273.15) * 1000));
+  oa_broker_push(oa_bme_temp_raw, t_raw);
+  oa_broker_push(oa_bme_temp, (uint32_t)((t + 273.15) * 1000));
   oa_broker_push(oa_bme_humidity_raw, h_raw);
-  oa_broker_push(oa_bme_humidity, (uint32_t)(h*10));
+  oa_broker_push(oa_bme_humidity, (uint32_t)(h*100));
 }
 
 static void sds_cb(uint32_t pm25, uint32_t pm10) {
   oa_broker_push(oa_sds_pm25, pm25);
   oa_broker_push(oa_sds_pm10, pm10);
+}
+static void si7006_cb(float celsius, float rh, int temp, int rh_raw) {
+  oa_broker_push(oa_si7006_temp, (uint32_t)celsius*1000);
+  oa_broker_push(oa_si7006_rh, (uint32_t)rh*100);
+  oa_broker_push(oa_si7006_temp_raw, (uint32_t)temp);
+  oa_broker_push(oa_si7006_rh_raw, (uint32_t)rh_raw);
 }
 
 static void check_connection() {
@@ -63,6 +70,9 @@ static void timer_cb(void *arg) {
   if (mgos_sys_config_get_openair_sds011_en()) {
     sds011_tick();
   }
+  if (mgos_sys_config_get_openair_si7006_en()) {
+    si7006_tick();
+  }
 }
 
 
@@ -79,6 +89,10 @@ enum mgos_app_init_result mgos_app_init(void) {
 
   if (mgos_sys_config_get_openair_sds011_en()) {
     sds011_init(&sds_cb);
+  }
+
+  if (mgos_sys_config_get_openair_si7006_en()) {
+    si7006_init(&si7006_cb);
   }
 
 
