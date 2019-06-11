@@ -28,7 +28,11 @@ config_schema:
   - ["openair", "o", { title: "OpenAir config" }]
   - ["openair.eeprom_en", "b", false, {title: "EEPROM installed"}]
   - ["openair.fan_speed", "i", 255, {title: "Speed of circulation fan"}]
-  - ["openair.mics_4514_en", "b", false, {title: "MICS installed"}]
+  - ["openair.mics4514_en", "b", true, {title: "MICS installed"}]
+  - ["openair.mics4514_pin_en", "i", 14, {title: "MICS enable pin"}]
+  - ["openair.mics4514_pin_pre", "i", 27, {title: "MICS preheater pin"}]
+  - ["openair.mics4514_pin_vox", "i", 34, {title: "MICS preheater pin"}]
+  - ["openair.mics4514_pin_vred", "i", 35, {title: "MICS preheater pin"}]
   - ["openair.quadsense_en", "b", true, {title: "Quadsenseboard installed"}]
   - ["openair.quadsense_idx", "i", 2, {title: "Quadsenseboard expansion module port"}]
   - ["openair.rfm95_en", "b", false, {title: "LoRa installed"}]
@@ -47,6 +51,7 @@ libs:
   - origin: https://github.com/mongoose-os-libs/rpc-uart
   - origin: https://github.com/mongoose-os-libs/rpc-ws
   - origin: https://github.com/mongoose-os-libs/http-server
+  - origin: https://github.com/mongoose-os-libs/adc
   - origin: https://github.com/mongoose-os-libs/pwm
   - origin: https://github.com/mongoose-os-libs/wifi
   - origin: https://github.com/mongoose-os-libs/ota-http-server

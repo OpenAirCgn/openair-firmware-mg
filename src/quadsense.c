@@ -58,17 +58,17 @@ bool quadsense_tick() {
       if (chan==7) {
         for (int i=0; i<8; i++) {
           LOG(LL_DEBUG, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
-          alpha_cb(
-              adc_values[0],
-              adc_values[1],
-              adc_values[2],
-              adc_values[3],
-              adc_values[4],
-              adc_values[5],
-              adc_values[6],
-              adc_values[7]
-              );
         }
+        alpha_cb(
+            adc_values[0],
+            adc_values[1],
+            adc_values[2],
+            adc_values[3],
+            adc_values[4],
+            adc_values[5],
+            adc_values[6],
+            adc_values[7]
+            );
       }
     } else {
       LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));

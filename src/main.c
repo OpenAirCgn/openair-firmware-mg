@@ -11,6 +11,7 @@
 #include "broker.h"
 #include "sds011.h"
 #include "si7006.h"
+#include "mics4514.h"
 
 
 static void alpha_cb(
@@ -54,6 +55,11 @@ static void si7006_cb(float celsius, float rh, int temp, int rh_raw) {
   oa_broker_push(oa_si7006_rh_raw, (uint32_t)rh_raw);
 }
 
+static void mics_cb(int vred, int vox) {
+  oa_broker_push(oa_mics4514_vred, (uint32_t)vred);
+  oa_broker_push(oa_mics4514_vox, (uint32_t)vox);
+}
+
 static void check_connection() {
   enum mgos_wifi_status status = mgos_wifi_get_status();
   openair_setStatusPattern((status == MGOS_WIFI_IP_ACQUIRED) ? OA_BLINK_ONCE_PAUSE : OA_BLINK_TWICE_PAUSE);
@@ -72,6 +78,9 @@ static void timer_cb(void *arg) {
   }
   if (mgos_sys_config_get_openair_si7006_en()) {
     si7006_tick();
+  }
+  if (mgos_sys_config_get_openair_mics4514_en()) {
+    mics4514_tick();
   }
 }
 
@@ -93,6 +102,10 @@ enum mgos_app_init_result mgos_app_init(void) {
 
   if (mgos_sys_config_get_openair_si7006_en()) {
     si7006_init(&si7006_cb);
+  }
+
+  if (mgos_sys_config_get_openair_mics4514_en()) {
+    mics4514_init(&mics_cb);
   }
 
 

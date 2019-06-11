@@ -26,11 +26,13 @@ typedef enum {
   oa_si7006_temp,
   oa_si7006_rh_raw,
   oa_si7006_rh,
+  oa_mics4514_vred,
+  oa_mics4514_vox,
   oa_si7006_temp_test = 0x80000000,
   oa_si7006_rh_test = 0x80000001,
 } oa_tag;
 
-#define NUM_VALUES 23
+#define NUM_VALUES 25
 
 
 typedef struct {
