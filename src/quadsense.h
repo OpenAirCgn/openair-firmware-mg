@@ -16,6 +16,7 @@ typedef void (*alphasense_cb) (
     );
 
 typedef void (*bme280_cb) (
+    uint8_t idx,
     uint32_t p_raw,
     float p,
     uint32_t t_raw,

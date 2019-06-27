@@ -6,7 +6,11 @@
 #include "stdio.h"
 
 static bool alpha_initialized = false;
-static bool bme_initialized = false;
+static bool bme0_initialized = false;
+static bool bme1_initialized = false;
+
+static BME280_Struct bme0;
+static BME280_Struct bme1;
 
 static struct mgos_i2c *i2c;
 static uint8_t adc_addr = 0;
@@ -40,8 +44,11 @@ void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
   alpha_initialized = true;
   LOG(LL_DEBUG, ("quadsense + alpha initialized"));
   
-  bme_initialized = bme280_init(i2c);
-  LOG(LL_INFO, ("quadsense + bme280 initialized"));
+  bme0_initialized = bme280_init(&bme0, i2c, 0);
+  LOG(LL_INFO, ("quadsense + bme0 initialized"));
+
+  bme1_initialized = bme280_init(&bme1, i2c, 1);
+  LOG(LL_INFO, ("quadsense + bme1 initialized"));
 }
 
 #define VREF 4.11
@@ -74,21 +81,40 @@ bool quadsense_tick() {
       LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
     }
   }
-  if (bme_initialized) { 
+  if (bme0_initialized) { 
     uint32_t temp, press, hum;
-    ok = bme280_read_data(i2c, false, &temp, &press, &hum); //TODO: ID must be set for new HW
+    ok = bme280_read_data(&bme0, &temp, &press, &hum); //TODO: ID must be set for new HW
     if (ok && bme_cb) {
       float realTemp, realPress, realHum;
-      bme280_compensate(temp, press, hum, &realTemp, &realPress, &realHum);
-      bme_cb(press, realPress, temp, realTemp, hum, realHum);
+      bme280_compensate(&bme0, temp, press, hum, &realTemp, &realPress, &realHum);
+//      LOG(LL_INFO, ("bme280 0: %f %f %f",realTemp, realPress, realHum));
+      bme_cb(0, press, realPress, temp, realTemp, hum, realHum);
     }
     if (!ok) {
-      bme_cb(0,0,0,0,0,0);
+      bme_cb(0,0,0,0,0,0,0);
       LOG(LL_ERROR, ("bme280 read failed: %d",ok));
     }
   } else {
-    bme_initialized = bme280_init(i2c);
+    bme0_initialized = bme280_init(&bme0, i2c, 0);
   }
+
+  if (bme1_initialized) { 
+    uint32_t temp, press, hum;
+    ok = bme280_read_data(&bme1, &temp, &press, &hum); //TODO: ID must be set for new HW
+    if (ok && bme_cb) {
+      float realTemp, realPress, realHum;
+      bme280_compensate(&bme1, temp, press, hum, &realTemp, &realPress, &realHum);
+//      LOG(LL_INFO, ("bme280 1: %f %f %f",realTemp, realPress, realHum));
+      bme_cb(1, press, realPress, temp, realTemp, hum, realHum);
+    }
+    if (!ok) {
+      bme_cb(1,0,0,0,0,0,0);
+      LOG(LL_ERROR, ("bme280 read failed: %d",ok));
+    }
+  } else {
+    bme1_initialized = bme280_init(&bme1, i2c, 1);
+  }
+
   return ok;
 }
 

@@ -4,11 +4,38 @@
 #include "mgos.h"
 #include "mgos_i2c.h"
 
-bool bme280_init();
+typedef struct {
+  uint16_t dig_T1;
+  int16_t  dig_T2;
+  int16_t  dig_T3;
+  uint16_t dig_P1;
+  int16_t  dig_P2;
+  int16_t  dig_P3;
+  int16_t  dig_P4;
+  int16_t  dig_P5;
+  int16_t  dig_P6;
+  int16_t  dig_P7;
+  int16_t  dig_P8;
+  int16_t  dig_P9;
+  uint8_t  dig_H1;
+  int16_t  dig_H2;
+  uint8_t  dig_H3;
+  int16_t  dig_H4;
+  int16_t  dig_H5;
+  int8_t   dig_H6;
+} BME280_Calib;
 
-bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin);
+typedef struct {
+  struct mgos_i2c *i2c;
+  uint8_t idx;
+  BME280_Calib calib;
+} BME280_Struct;
 
-bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum);
+bool bme280_init(BME280_Struct* bme, struct mgos_i2c *i2c, uint8_t idx);
+
+bool bme280_read_calib(BME280_Struct* bme);
+
+bool bme280_read_data(BME280_Struct* bme, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum);
 
 typedef enum {
   MEASURE_OFF = 0,
@@ -44,7 +71,8 @@ typedef enum {
   FILTER_16 = 4
 } BME280_Filter_Mode;
 
-bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
+
+bool bme280_set_mode(BME280_Struct* bme,
   BME280_Measure_Mode humidity_mode,
   BME280_Measure_Mode pressure_mode,
   BME280_Measure_Mode temperature_mode,
@@ -52,8 +80,7 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
   BME280_Standby_Time pause,
   BME280_Filter_Mode filter);
 
-
-void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
+void bme280_compensate(BME280_Struct* bme, int32_t temp, int32_t press, int32_t hum,
   float *outTemp, float *outPress, float *outHum);
 
 #endif

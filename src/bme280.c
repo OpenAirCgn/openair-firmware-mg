@@ -1,4 +1,5 @@
 #include "bme280.h"
+
 #include "openairboard.h"
 
 #define BME280_BASE_ADDR 0x76 /* add 1 if address pin is set */
@@ -21,39 +22,17 @@
 
 #define BME280_DONE_RETRIES 1000
 
-// calibration data - could go into a struct
-typedef struct {
-  uint16_t dig_T1;
-  int16_t  dig_T2;
-  int16_t  dig_T3;
-  uint16_t dig_P1;
-  int16_t  dig_P2;
-  int16_t  dig_P3;
-  int16_t  dig_P4;
-  int16_t  dig_P5;
-  int16_t  dig_P6;
-  int16_t  dig_P7;
-  int16_t  dig_P8;
-  int16_t  dig_P9;
-  uint8_t  dig_H1;
-  int16_t  dig_H2;
-  uint8_t  dig_H3;
-  int16_t  dig_H4;
-  int16_t  dig_H5;
-  int8_t   dig_H6;
-} BME280_Calib;
 
-static BME280_Calib calib = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-bool bme280_init(struct mgos_i2c * i2c) {
-
-  bool ok = bme280_read_calib(i2c, false);  //TODO: ID must be set for new HW
+bool bme280_init(BME280_Struct* bme, struct mgos_i2c *i2c, uint8_t idx) {
+  bme->i2c = i2c;
+  bme->idx = idx;
+  bool ok = bme280_read_calib(bme);  //TODO: ID must be set for new HW
   if (!ok) {
     LOG(LL_ERROR, ("failed bme280_read_calib()"));
     return ok;
   }
 
-  ok = bme280_set_mode(i2c, false,     //TODO: ID must be set for new HW
+  ok = bme280_set_mode(bme,
     MEASURE_OS4,
     MEASURE_OS4,
     MEASURE_OS4,
@@ -68,42 +47,42 @@ bool bme280_init(struct mgos_i2c * i2c) {
   return ok;
 }
 
-bool bme280_read_calib(struct mgos_i2c *i2c, bool addrPin) {
-  uint8_t addr = BME280_BASE_ADDR + (addrPin ? 1 : 0);
+bool bme280_read_calib(BME280_Struct* bme) {
+  uint8_t addr = BME280_BASE_ADDR + (bme->idx ? 1 : 0);
   uint8_t calib1[26]; // 0x88..0xa1
   uint8_t calib2[7];  // 0xe1..0xe7
-  bool ok = mgos_i2c_read_reg_n(i2c, addr, BME280_CALIB1_BASE, BME280_CALIB1_SIZE, &(calib1[0]));
-  ok = ok && mgos_i2c_read_reg_n(i2c, addr, BME280_CALIB2_BASE, BME280_CALIB2_SIZE, &(calib2[0]));
+  bool ok = mgos_i2c_read_reg_n(bme->i2c, addr, BME280_CALIB1_BASE, BME280_CALIB1_SIZE, &(calib1[0]));
+  ok = ok && mgos_i2c_read_reg_n(bme->i2c, addr, BME280_CALIB2_BASE, BME280_CALIB2_SIZE, &(calib2[0]));
   if (ok) {
-    calib.dig_T1 = calib1[0] | (calib1[1] << 8);
-    calib.dig_T2 = calib1[2] | (calib1[3] << 8);
-    calib.dig_T3 = calib1[4] | (calib1[5] << 8);
-    calib.dig_P1 = calib1[6] | (calib1[7] << 8);
-    calib.dig_P2 = calib1[8] | (calib1[9] << 8);
-    calib.dig_P3 = calib1[10] | (calib1[11] << 8);
-    calib.dig_P4 = calib1[12] | (calib1[13] << 8);
-    calib.dig_P5 = calib1[14] | (calib1[15] << 8);
-    calib.dig_P6 = calib1[16] | (calib1[17] << 8);
-    calib.dig_P7 = calib1[18] | (calib1[19] << 8);
-    calib.dig_P8 = calib1[20] | (calib1[21] << 8);
-    calib.dig_P9 = calib1[22] | (calib1[23] << 8);
-    calib.dig_H1 = calib1[25];
-    calib.dig_H2 = calib2[0] | (calib2[1] << 8);
-    calib.dig_H3 = calib2[2];
-    calib.dig_H4 = (calib2[3] << 4) | (calib2[4] & 0x0f);
-    calib.dig_H5 = (calib2[4] >> 4) | (calib2[5] << 4);
-    calib.dig_H6 = calib2[6];
+    bme->calib.dig_T1 = calib1[0] | (calib1[1] << 8);
+    bme->calib.dig_T2 = calib1[2] | (calib1[3] << 8);
+    bme->calib.dig_T3 = calib1[4] | (calib1[5] << 8);
+    bme->calib.dig_P1 = calib1[6] | (calib1[7] << 8);
+    bme->calib.dig_P2 = calib1[8] | (calib1[9] << 8);
+    bme->calib.dig_P3 = calib1[10] | (calib1[11] << 8);
+    bme->calib.dig_P4 = calib1[12] | (calib1[13] << 8);
+    bme->calib.dig_P5 = calib1[14] | (calib1[15] << 8);
+    bme->calib.dig_P6 = calib1[16] | (calib1[17] << 8);
+    bme->calib.dig_P7 = calib1[18] | (calib1[19] << 8);
+    bme->calib.dig_P8 = calib1[20] | (calib1[21] << 8);
+    bme->calib.dig_P9 = calib1[22] | (calib1[23] << 8);
+    bme->calib.dig_H1 = calib1[25];
+    bme->calib.dig_H2 = calib2[0] | (calib2[1] << 8);
+    bme->calib.dig_H3 = calib2[2];
+    bme->calib.dig_H4 = (calib2[3] << 4) | (calib2[4] & 0x0f);
+    bme->calib.dig_H5 = (calib2[4] >> 4) | (calib2[5] << 4);
+    bme->calib.dig_H6 = calib2[6];
   } else {
-    mgos_i2c_stop(i2c);
+    mgos_i2c_stop(bme->i2c);
   }
   return ok;
 }
 
 
-bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum) {
-  uint8_t addr = BME280_BASE_ADDR + (addrPin ? 1 : 0);
+bool bme280_read_data(BME280_Struct* bme, uint32_t *outTemp, uint32_t* outPress, uint32_t *outHum) {
+  uint8_t addr = BME280_BASE_ADDR + (bme->idx ? 1 : 0);
   uint8_t data[BME280_DATA_SIZE];  // 0xf7..0xfe
-  bool ok = mgos_i2c_read_reg_n(i2c, addr, BME280_DATA_BASE, BME280_DATA_SIZE, &(data[0]));
+  bool ok = mgos_i2c_read_reg_n(bme->i2c, addr, BME280_DATA_BASE, BME280_DATA_SIZE, &(data[0]));
   if (ok) {
     uint32_t press = (data[2] >> 4) | (data[1] << 4) | (data[0] << 12);
     uint32_t temp = (data[5] >> 4) | (data[4] << 4) | (data[3] << 12);
@@ -116,7 +95,7 @@ bool bme280_read_data(struct mgos_i2c *i2c, bool addrPin, uint32_t *outTemp, uin
   return ok;
 }
 
-bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
+bool bme280_set_mode(BME280_Struct* bme,
   BME280_Measure_Mode humidity_mode,
   BME280_Measure_Mode pressure_mode,
   BME280_Measure_Mode temperature_mode,
@@ -124,9 +103,9 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
   BME280_Standby_Time pause,
   BME280_Filter_Mode filter) {
 
-  uint8_t addr = BME280_BASE_ADDR + (addrPin ? 1 : 0);
+  uint8_t addr = BME280_BASE_ADDR + (bme->idx ? 1 : 0);
   //set to sleep mode to allow 
-  bool ok = mgos_i2c_write_reg_b(i2c, addr, BME280_CTRL_MEAS_ADDR, 0x00);
+  bool ok = mgos_i2c_write_reg_b(bme->i2c, addr, BME280_CTRL_MEAS_ADDR, 0x00);
   if (!ok) {
     LOG(LL_ERROR, ("Could not pause BME280"));
     return false;
@@ -134,7 +113,7 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
 
   int i;
   for (i=0; i<BME280_DONE_RETRIES; i++) {
-    int val = mgos_i2c_read_reg_b(i2c, addr, BME280_STATUS_ADDR);
+    int val = mgos_i2c_read_reg_b(bme->i2c, addr, BME280_STATUS_ADDR);
     if (val < 0) {
       LOG(LL_ERROR, ("Failed to read BME280 status"));
       return false;
@@ -148,13 +127,13 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
     return false;
   }
 
-  ok = mgos_i2c_write_reg_b(i2c, addr, BME280_CTRL_HUM_ADDR, humidity_mode);
+  ok = mgos_i2c_write_reg_b(bme->i2c, addr, BME280_CTRL_HUM_ADDR, humidity_mode);
   
   uint8_t conf = (((uint8_t)pause) << 5) | (((uint8_t)filter) << 2);  
-  ok = ok && mgos_i2c_write_reg_b(i2c, addr, BME280_CONFIG_ADDR, conf);
+  ok = ok && mgos_i2c_write_reg_b(bme->i2c, addr, BME280_CONFIG_ADDR, conf);
 
   uint8_t ctrl = (((uint8_t)temperature_mode) << 5) | (((uint8_t)pressure_mode) << 2) | ((uint8_t) operation);  
-  ok = ok && mgos_i2c_write_reg_b(i2c, addr, BME280_CTRL_MEAS_ADDR, ctrl);
+  ok = ok && mgos_i2c_write_reg_b(bme->i2c, addr, BME280_CTRL_MEAS_ADDR, ctrl);
 
   if (!ok) {
     LOG(LL_ERROR, ("Failed to set BME280 configuration"));
@@ -163,7 +142,7 @@ bool bme280_set_mode(struct mgos_i2c *i2c, bool addrPin,
 }
 
 //formulas taken from datasheet
-void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
+void bme280_compensate(BME280_Struct* bme, int32_t temp, int32_t press, int32_t hum,
   float *outTemp, float *outPress, float *outHum) {
 
   int32_t t_fine;
@@ -174,8 +153,8 @@ void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
   //temperature
   {
     int32_t var1, var2;
-    var1 = ((((temp>>3) - ((int32_t)calib.dig_T1<<1))) * ((int32_t)calib.dig_T2)) >> 11;
-    var2 = (((((temp>>4) - ((int32_t)calib.dig_T1)) * ((temp>>4) - ((int32_t)calib.dig_T1))) >> 12) * ((int32_t)calib.dig_T3)) >> 14;
+    var1 = ((((temp>>3) - ((int32_t)(bme->calib.dig_T1)<<1))) * ((int32_t)(bme->calib.dig_T2))) >> 11;
+    var2 = (((((temp>>4) - ((int32_t)(bme->calib.dig_T1))) * ((temp>>4) - ((int32_t)(bme->calib.dig_T1)))) >> 12) * ((int32_t)(bme->calib.dig_T3))) >> 14;
     t_fine = var1 + var2;
     temperature = ((t_fine*5+128)>>8) * 0.01;
   }
@@ -184,16 +163,16 @@ void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
   {
     int64_t var1, var2, p;
     var1 = ((int64_t)t_fine) - 128000;
-    var2 = var1 * var1 * (int64_t)calib.dig_P6;
-    var2 = var2 + ((var1*(int64_t)calib.dig_P5)<<17);
-    var2 = var2 + (((int64_t)calib.dig_P4)<<35);
-    var1 = ((var1 * var1 * (int64_t)calib.dig_P3)>>8);
-    var1 = (((((int64_t)1)<<47)+var1))*((int64_t)calib.dig_P1)>>33;
+    var2 = var1 * var1 * (int64_t)(bme->calib.dig_P6);
+    var2 = var2 + ((var1*(int64_t)(bme->calib.dig_P5))<<17);
+    var2 = var2 + (((int64_t)(bme->calib.dig_P4))<<35);
+    var1 = ((var1 * var1 * (int64_t)(bme->calib.dig_P3))>>8);
+    var1 = (((((int64_t)1)<<47)+var1))*((int64_t)(bme->calib.dig_P1))>>33;
     if (var1 != 0) {
       p = 1048576-press;
       p = (((p<<31)-var2)*3125)/var1;
-      var1 = (((int64_t)calib.dig_P9) * (p>>13) * (p>>13)) >> 25; var2 = (((int64_t)calib.dig_P8) * p) >> 19;
-      p = ((p + var1 + var2) >> 8) + (((int64_t)calib.dig_P7)<<4);
+      var1 = (((int64_t)(bme->calib.dig_P9)) * (p>>13) * (p>>13)) >> 25; var2 = (((int64_t)(bme->calib.dig_P8)) * p) >> 19;
+      p = ((p + var1 + var2) >> 8) + (((int64_t)(bme->calib.dig_P7))<<4);
       pressure = p / 25600.0;
     }
   }
@@ -201,8 +180,8 @@ void bme280_compensate(int32_t temp, int32_t press, int32_t hum,
   //humidity
   int32_t v_x1_u32r;
   v_x1_u32r = (t_fine - ((int32_t)76800));
-  v_x1_u32r = (((((hum << 14) - (((int32_t)calib.dig_H4) << 20) - (((int32_t)calib.dig_H5) * v_x1_u32r)) + ((int32_t)16384)) >> 15) * (((((((v_x1_u32r * ((int32_t)calib.dig_H6)) >> 10) * (((v_x1_u32r * ((int32_t)calib.dig_H3)) >> 11) + ((int32_t)32768))) >> 10) + ((int32_t)2097152)) * ((int32_t)calib.dig_H2) + 8192) >> 14));
-  v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * ((int32_t)calib.dig_H1)) >> 4));
+  v_x1_u32r = (((((hum << 14) - (((int32_t)(bme->calib.dig_H4)) << 20) - (((int32_t)(bme->calib.dig_H5)) * v_x1_u32r)) + ((int32_t)16384)) >> 15) * (((((((v_x1_u32r * ((int32_t)(bme->calib.dig_H6))) >> 10) * (((v_x1_u32r * ((int32_t)(bme->calib.dig_H3))) >> 11) + ((int32_t)32768))) >> 10) + ((int32_t)2097152)) * ((int32_t)(bme->calib.dig_H2)) + 8192) >> 14));
+  v_x1_u32r = (v_x1_u32r - (((((v_x1_u32r >> 15) * (v_x1_u32r >> 15)) >> 7) * ((int32_t)(bme->calib.dig_H1))) >> 4));
   v_x1_u32r = ((v_x1_u32r < 0) ? 0 : v_x1_u32r);
   v_x1_u32r = ((v_x1_u32r > 419430400) ? 419430400 : v_x1_u32r);
   humidity = (v_x1_u32r>>12) / 1024.0;
