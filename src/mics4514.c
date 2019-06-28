@@ -23,7 +23,7 @@ bool mics4514_init( mics4514_cb cb) {
 void mics4514_tick() {
   int vred = mgos_adc_read_voltage(VRED_PIN);	
   int vox = mgos_adc_read_voltage(VOX_PIN);	
-  LOG(LL_INFO, ("mics: %d %d", vred, vox));
+  LOG(LL_DEBUG, ("mics: %d %d", vred, vox));
   mics_cb (vred, vox);
 }
 

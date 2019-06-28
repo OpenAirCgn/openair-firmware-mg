@@ -7,3 +7,11 @@
 	- bme sensor (lib exists)
 	- quadsense / noisemeter -> possibly externalize
 	- ADC create lib
+
+- provide DNS for AP, e.g. be able to connect to openair.local
+
+- lora & rfm85/sx1276:
+	- radiohead
+	- lmic
+	- semtech ref
+	- own

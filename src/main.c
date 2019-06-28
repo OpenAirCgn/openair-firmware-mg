@@ -108,8 +108,8 @@ enum mgos_app_init_result mgos_app_init(void) {
     mics4514_init(&mics_cb);
   }
 
-
-  mgos_set_timer(150 /* ms */, true /* repeat */, timer_cb, NULL);
+  int tick_interval = mgos_sys_config_get_openair_tick_interval();
+  mgos_set_timer(tick_interval /* ms */, true /* repeat */, timer_cb, NULL);
   return MGOS_APP_INIT_SUCCESS;
 }
 

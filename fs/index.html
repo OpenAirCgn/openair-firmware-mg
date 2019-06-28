@@ -118,7 +118,7 @@ function updateUI() {
   document.querySelector("#pressureraw").textContent = pressureRaw; 
 
   let humidity = currentValues[OATag.oa_bme_humidity];
-  humidity = humidity ? (humidity / 10).toFixed(1) : "--";
+  humidity = humidity ? (humidity / 100).toFixed(1) : "--";
   document.querySelector("#humidity").textContent = humidity; 
 
   let humidityRaw = currentValues[OATag.oa_bme_humidity_raw];
