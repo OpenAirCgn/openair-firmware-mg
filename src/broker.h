@@ -28,11 +28,18 @@ typedef enum {
   oa_si7006_rh,
   oa_mics4514_vred,
   oa_mics4514_vox,
+  oa_bme1_pressure_raw,
+  oa_bme1_pressure,  //pascal
+  oa_bme1_temp_raw,
+  oa_bme1_temp,       //millikelvin
+  oa_bme1_humidity_raw,
+  oa_bme1_humidity,  //permille rh
+
   oa_si7006_temp_test = 0x80000000,
   oa_si7006_rh_test = 0x80000001,
 } oa_tag;
 
-#define NUM_VALUES 25
+#define NUM_VALUES 31
 
 
 typedef struct {
