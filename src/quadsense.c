@@ -20,9 +20,12 @@ static int adc_values[8] = {0,0,0,0,0,0,0,0};
 static alphasense_cb alpha_cb;
 static bme280_cb bme_cb;
 
+static mgos_timer_id timer_id_alpha = NULL;
+static mgos_timer_id timer_id_bme0 = NULL;
+static mgos_timer_id timer_id_bme1 = NULL;
 
 //void quadsense_init() {
-void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
+bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
 
   alpha_cb = a_cb;
   bme_cb = b_cb;
@@ -37,30 +40,35 @@ void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
     case 1: adc_addr = 0x16; break;
     case 2: adc_addr = 0x14; id1 = true; break;
     default:
-      LOG(LL_ERROR, ("Quadsense init: Invalid module index %i", modIdx));
-      break;
+            LOG(LL_ERROR, ("Quadsense init: Invalid module index %i", modIdx));
+            break;
   }
   openair_enable_module(modIdx, true);
   alpha_initialized = true;
   LOG(LL_DEBUG, ("quadsense + alpha initialized"));
-  
-  bme0_initialized = bme280_init(&bme0, i2c, 0);
-  LOG(LL_INFO, ("quadsense + bme0 initialized"));
 
-  bme1_initialized = bme280_init(&bme1, i2c, 1);
-  LOG(LL_INFO, ("quadsense + bme1 initialized"));
+
+  if (mgos_sys_config_get_openair_quadsense_bme0_en()) {
+    bme0_initialized = bme280_init(&bme0, i2c, 0);
+    LOG(LL_INFO, ("quadsense + bme0 initialized"));
+  }
+
+  if (mgos_sys_config_get_openair_quadsense_bme1_en()) {
+    bme1_initialized = bme280_init(&bme1, i2c, 1);
+    LOG(LL_INFO, ("quadsense + bme1 initialized"));
+  }
+
+  return true;
 }
 
 #define VREF 4.11
 
-bool quadsense_tick() {
-  bool ok = false;
+static void alpha_tick(){
   if (alpha_initialized) {
     uint8_t chan;
     int val;
-    ok = ltc2497_read(i2c, adc_addr, &chan, &val);
 
-    if (ok) {
+    if (ltc2497_read(i2c, adc_addr, &chan, &val)) {
       adc_values[chan] = val;
       if (chan==7) {
         for (int i=0; i<8; i++) {
@@ -78,44 +86,71 @@ bool quadsense_tick() {
             );
       }
     } else {
-      LOG(LL_ERROR, ("ltc2497 read failed: %d",ok));
+      LOG(LL_ERROR, ("ltc2497 read failed"));
     }
   }
+}
+static void bme_tick(int bmeNo){
+  uint32_t temp, press, hum;
+  BME280_Struct * bme = bmeNo == 0 ? &bme0 : &bme1;
+
+  bool ok = bme280_read_data(bme, &temp, &press, &hum); //TODO: ID must be set for new HW
+  if (ok && bme_cb) {
+    float realTemp, realPress, realHum;
+    bme280_compensate(bme, temp, press, hum, &realTemp, &realPress, &realHum);
+    bme_cb(bmeNo, press, realPress, temp, realTemp, hum, realHum);
+  }
+  if (!ok) {
+    bme_cb(bmeNo,0,0,0,0,0,0);
+    LOG(LL_ERROR, ("bme280(%d) read failed: %d",bmeNo, ok));
+  }
+}
+
+static void bme0_tick(){
   if (bme0_initialized) { 
-    uint32_t temp, press, hum;
-    ok = bme280_read_data(&bme0, &temp, &press, &hum); //TODO: ID must be set for new HW
-    if (ok && bme_cb) {
-      float realTemp, realPress, realHum;
-      bme280_compensate(&bme0, temp, press, hum, &realTemp, &realPress, &realHum);
-//      LOG(LL_INFO, ("bme280 0: %f %f %f",realTemp, realPress, realHum));
-      bme_cb(0, press, realPress, temp, realTemp, hum, realHum);
-    }
-    if (!ok) {
-      bme_cb(0,0,0,0,0,0,0);
-      LOG(LL_ERROR, ("bme280 read failed: %d",ok));
-    }
+    bme_tick(0);
   } else {
     bme0_initialized = bme280_init(&bme0, i2c, 0);
   }
-
+}
+static void bme1_tick(){
   if (bme1_initialized) { 
-    uint32_t temp, press, hum;
-    ok = bme280_read_data(&bme1, &temp, &press, &hum); //TODO: ID must be set for new HW
-    if (ok && bme_cb) {
-      float realTemp, realPress, realHum;
-      bme280_compensate(&bme1, temp, press, hum, &realTemp, &realPress, &realHum);
-//      LOG(LL_INFO, ("bme280 1: %f %f %f",realTemp, realPress, realHum));
-      bme_cb(1, press, realPress, temp, realTemp, hum, realHum);
-    }
-    if (!ok) {
-      bme_cb(1,0,0,0,0,0,0);
-      LOG(LL_ERROR, ("bme280 read failed: %d",ok));
-    }
+    bme_tick(1);
   } else {
     bme1_initialized = bme280_init(&bme1, i2c, 1);
   }
-
-  return ok;
 }
+
+void quadsense_start(){
+  int interval;
+  if (mgos_sys_config_get_openair_quadsense_en()){
+    interval = mgos_sys_config_get_openair_quadsense_interval();
+    timer_id_alpha = mgos_set_timer(interval, MGOS_TIMER_REPEAT, alpha_tick, NULL);
+  }
+  if (mgos_sys_config_get_openair_quadsense_bme0_en()){
+    interval = mgos_sys_config_get_openair_quadsense_bme0_interval();
+    timer_id_alpha = mgos_set_timer(interval, MGOS_TIMER_REPEAT, bme0_tick, NULL);
+  }
+  if (mgos_sys_config_get_openair_quadsense_bme1_en()){
+    interval = mgos_sys_config_get_openair_quadsense_bme1_interval();
+    timer_id_alpha = mgos_set_timer(interval, MGOS_TIMER_REPEAT, bme1_tick, NULL);
+  }
+}
+
+void quadsense_stop(){
+ if (timer_id_alpha) {
+  mgos_clear_timer(timer_id_alpha);
+  timer_id_alpha = (mgos_timer_id)NULL;
+ }
+ if (timer_id_bme0) {
+  mgos_clear_timer(timer_id_bme0);
+  timer_id_bme0 = (mgos_timer_id)NULL;
+ }
+ if (timer_id_bme1) {
+  mgos_clear_timer(timer_id_bme1);
+  timer_id_bme1 = (mgos_timer_id)NULL;
+ }
+}
+
 
 // vim: et:sw=2:ts=2

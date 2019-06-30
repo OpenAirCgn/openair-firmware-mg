@@ -13,61 +13,6 @@
 #include "si7006.h"
 #include "mics4514.h"
 
-
-static void alpha_cb(
-    int alpha1,
-    int alpha2,
-    int alpha3,
-    int alpha4,
-    int alpha5,
-    int alpha6,
-    int alpha7,
-    int alpha8
-    ) {
-  oa_broker_push(oa_alpha_1, alpha1);
-  oa_broker_push(oa_alpha_2, alpha2);
-  oa_broker_push(oa_alpha_3, alpha3);
-  oa_broker_push(oa_alpha_4, alpha4);
-  oa_broker_push(oa_alpha_5, alpha5);
-  oa_broker_push(oa_alpha_6, alpha6);
-  oa_broker_push(oa_alpha_7, alpha7);
-  oa_broker_push(oa_alpha_8, alpha8);
-}
-
-static void bme_cb(uint8_t idx, uint32_t p_raw, float p, uint32_t t_raw, float t, uint32_t h_raw, float h) {
-  if (!idx) {
-    oa_broker_push(oa_bme_pressure_raw, p_raw);
-    oa_broker_push(oa_bme_pressure, (uint32_t)(p * 100));
-    oa_broker_push(oa_bme_temp_raw, t_raw);
-    oa_broker_push(oa_bme_temp, (uint32_t)((t + 273.15) * 1000));
-    oa_broker_push(oa_bme_humidity_raw, h_raw);
-    oa_broker_push(oa_bme_humidity, (uint32_t)(h*100));
-  } else {
-    oa_broker_push(oa_bme1_pressure_raw, p_raw);
-    oa_broker_push(oa_bme1_pressure, (uint32_t)(p * 100));
-    oa_broker_push(oa_bme1_temp_raw, t_raw);
-    oa_broker_push(oa_bme1_temp, (uint32_t)((t + 273.15) * 1000));
-    oa_broker_push(oa_bme1_humidity_raw, h_raw);
-    oa_broker_push(oa_bme1_humidity, (uint32_t)(h*100));
-  }
-}
-
-static void sds_cb(uint32_t pm25, uint32_t pm10) {
-  oa_broker_push(oa_sds_pm25, pm25);
-  oa_broker_push(oa_sds_pm10, pm10);
-}
-static void si7006_cb(float celsius, float rh, int temp, int rh_raw) {
-  oa_broker_push(oa_si7006_temp, (uint32_t)celsius*1000);
-  oa_broker_push(oa_si7006_rh, (uint32_t)rh*100);
-  oa_broker_push(oa_si7006_temp_raw, (uint32_t)temp);
-  oa_broker_push(oa_si7006_rh_raw, (uint32_t)rh_raw);
-}
-
-static void mics_cb(int vred, int vox) {
-  oa_broker_push(oa_mics4514_vred, (uint32_t)vred);
-  oa_broker_push(oa_mics4514_vox, (uint32_t)vox);
-}
-
 static void check_connection() {
   enum mgos_wifi_status status = mgos_wifi_get_status();
   openair_setStatusPattern((status == MGOS_WIFI_IP_ACQUIRED) ? OA_BLINK_ONCE_PAUSE : OA_BLINK_TWICE_PAUSE);
@@ -77,22 +22,7 @@ static void timer_cb(void *arg) {
   (void) arg;
   check_connection();
   openair_tick();
-
-  if (mgos_sys_config_get_openair_quadsense_en()) {
-    quadsense_tick();
-  }
-  if (mgos_sys_config_get_openair_sds011_en()) {
-    sds011_tick();
-  }
-  if (mgos_sys_config_get_openair_si7006_en()) {
-    si7006_tick();
-  }
-  if (mgos_sys_config_get_openair_mics4514_en()) {
-    mics4514_tick();
-  }
 }
-
-
 
 enum mgos_app_init_result mgos_app_init(void) {
   LOG(LL_INFO, ("OpenAir starting..."));
@@ -101,19 +31,27 @@ enum mgos_app_init_result mgos_app_init(void) {
   oa_broker_init();
 
   if (mgos_sys_config_get_openair_quadsense_en()) {
-    quadsense_init(&alpha_cb, &bme_cb);
+    if (quadsense_init(&alpha_cb, &bme_cb)) {
+      quadsense_start();
+    }
   }
 
   if (mgos_sys_config_get_openair_sds011_en()) {
-    sds011_init(&sds_cb);
+    if (sds011_init(&sds_cb)) {
+      sds011_start();
+    }
   }
 
   if (mgos_sys_config_get_openair_si7006_en()) {
-    si7006_init(&si7006_cb);
+    if (si7006_init(&si7006_cb)) {
+      si7006_start();
+    }
   }
 
   if (mgos_sys_config_get_openair_mics4514_en()) {
-    mics4514_init(&mics_cb);
+    if (mics4514_init(&mics_cb)) {
+      mics4514_start();
+    }
   }
 
   int tick_interval = mgos_sys_config_get_openair_tick_interval();

@@ -8,10 +8,12 @@
 #define EXTLED_PIN 4
 
 void openair_init() {
+
   mgos_gpio_setup_output(
       MOD1_EN_PIN,
       false
   );
+
   mgos_gpio_setup_output(
       MOD2_EN_PIN, 
       false

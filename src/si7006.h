@@ -1,14 +1,11 @@
-#ifndef _SI7006_H_
-#define _SI7006_H_
+#pragma once
 
 #include "mgos.h"
-#include "mgos_i2c.h"
 
 typedef void (*si7xxx_cb)(float celsius, float rh, int temp_raw, int rh_raw);
-bool si7006_read();
-void si7006_init(si7xxx_cb si_cb);
-bool si7006_tick();
+void si7006_start();
+void si7006_stop();
+bool si7006_init(si7xxx_cb si_cb);
 
-#endif
 
 // vim: et:sw=2:ts=2

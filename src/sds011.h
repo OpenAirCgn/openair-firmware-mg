@@ -7,8 +7,12 @@
 typedef void (*sds011_cb)(uint32_t pm25_ng, uint32_t pm10_ng);
 
 bool sds011_init(sds011_cb cb);
+void sds011_start();
+void sds011_stop();
 
 void sds011_tick();
 
 
 #endif
+
+// vim: et:sw=2:ts=2

@@ -43,7 +43,7 @@ void oa_broker_tick() {
 
 
 bool establishing_connection = false;
-bool connection_established=false;
+bool connection_established = false;
 struct mg_connection *nc = NULL;
 
 static void ev_handler(struct mg_connection *conn, int ev, void *event_data, void *user_data) {
@@ -98,8 +98,6 @@ static void tcp_push (uint32_t ts, oa_tag tag, uint32_t value) {
     return;
   }
 
-
-
   // assemble JSON
   struct mbuf mb;
   struct json_out jbuf = JSON_OUT_MBUF(&mb);
@@ -121,6 +119,71 @@ void oa_broker_push(oa_tag tag, uint32_t value) {
   // for now it's hard coded.
   if (mgos_sys_config_get_openair_firehose_en()) {
     tcp_push(ts, tag, value);
+  }
+}
+
+// callbacks
+
+
+void mics_cb(int vred, int vox) {
+  oa_broker_push(oa_mics4514_vred, (uint32_t)vred);
+  oa_broker_push(oa_mics4514_vox, (uint32_t)vox);
+}
+
+void si7006_cb(float celsius, float rh, int temp, int rh_raw) {
+  oa_broker_push(oa_si7006_temp, (uint32_t)celsius*1000);
+  oa_broker_push(oa_si7006_rh, (uint32_t)rh*100);
+  oa_broker_push(oa_si7006_temp_raw, (uint32_t)temp);
+  oa_broker_push(oa_si7006_rh_raw, (uint32_t)rh_raw);
+}
+
+void sds_cb(uint32_t pm25, uint32_t pm10) {
+  oa_broker_push(oa_sds_pm25, pm25);
+  oa_broker_push(oa_sds_pm10, pm10);
+}
+void alpha_cb(
+    int alpha1,
+    int alpha2,
+    int alpha3,
+    int alpha4,
+    int alpha5,
+    int alpha6,
+    int alpha7,
+    int alpha8
+    ) {
+  oa_broker_push(oa_alpha_1, alpha1);
+  oa_broker_push(oa_alpha_2, alpha2);
+  oa_broker_push(oa_alpha_3, alpha3);
+  oa_broker_push(oa_alpha_4, alpha4);
+  oa_broker_push(oa_alpha_5, alpha5);
+  oa_broker_push(oa_alpha_6, alpha6);
+  oa_broker_push(oa_alpha_7, alpha7);
+  oa_broker_push(oa_alpha_8, alpha8);
+}
+
+void bme_cb(uint8_t idx, 
+    uint32_t p_raw, float p, 
+    uint32_t t_raw, float t, 
+    uint32_t h_raw, float h) {
+  switch (idx) {
+    case 0:
+      oa_broker_push(oa_bme0_pressure_raw, p_raw);
+      oa_broker_push(oa_bme0_pressure, (uint32_t)(p * 100));
+      oa_broker_push(oa_bme0_temp_raw, t_raw);
+      oa_broker_push(oa_bme0_temp, (uint32_t)((t + 273.15) * 1000));
+      oa_broker_push(oa_bme0_humidity_raw, h_raw);
+      oa_broker_push(oa_bme0_humidity, (uint32_t)(h*100));
+      break;
+    case 1:
+      oa_broker_push(oa_bme1_pressure_raw, p_raw);
+      oa_broker_push(oa_bme1_pressure, (uint32_t)(p * 100));
+      oa_broker_push(oa_bme1_temp_raw, t_raw);
+      oa_broker_push(oa_bme1_temp, (uint32_t)((t + 273.15) * 1000));
+      oa_broker_push(oa_bme1_humidity_raw, h_raw);
+      oa_broker_push(oa_bme1_humidity, (uint32_t)(h*100));
+      break;
+    default:
+      LOG(LL_ERROR, ("Invalid BME idx (%d)", idx));
   }
 }
 

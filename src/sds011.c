@@ -7,6 +7,8 @@ static uint32_t pm25_accum = 0; //we sum up in ng/m3, reports are in 0.1ug/m3
 static uint32_t pm10_accum = 0; //we sum up in ng/m3, reports are in 0.1ug/m3
 static uint32_t num_measurements = 0;
 
+static mgos_timer_id timer_id = NULL;
+
 typedef enum {
   SDS011_SET_DATA_REPORTING_MODE = 2,
   SDS011_QUERY_DATA = 4,
@@ -122,3 +124,18 @@ uint8_t sds011_checksum(uint8_t* buf, uint8_t totalLen) {
   }
   return sum & 0xff;
 }
+
+void sds011_start(){
+
+  int interval = mgos_sys_config_get_openair_sds011_interval();
+  timer_id = mgos_set_timer(interval, MGOS_TIMER_REPEAT, sds011_tick, NULL);
+}
+
+void sds011_stop(){
+  if (timer_id) {
+    mgos_clear_timer(timer_id);
+    timer_id = (mgos_timer_id)NULL;
+  }
+}
+
+// vim: et:sw=2:ts=2

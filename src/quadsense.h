@@ -28,10 +28,12 @@ typedef void (*bme280_cb) (
   /** initialize quadsense. Call once at startup (calling it again shouldn't hurt...)
   */
 
-  void quadsense_init( alphasense_cb a_cb, bme280_cb b_cb );
+  bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb );
+  void quadsense_start();
+  void quadsense_stop();
 
   /** call on a regular basis */
-  bool quadsense_tick();
+  //bool quadsense_tick();
 
 #endif
 
