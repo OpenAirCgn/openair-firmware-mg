@@ -34,6 +34,7 @@ static void current_values_cb ( struct mg_rpc_request_info *ri,
 
 bool oa_broker_init() {
   mg_rpc_add_handler(mgos_rpc_get_global(), "OpenAir.Current", "", current_values_cb, NULL);
+  LOG(LL_INFO, ("adding openair current handler"));
   return true;
 }
 
@@ -185,6 +186,13 @@ void bme_cb(uint8_t idx,
     default:
       LOG(LL_ERROR, ("Invalid BME idx (%d)", idx));
   }
+}
+
+void noisemeter_cb(float dba, float dbc) {
+  if (dba < 0) { dba = 0; }
+  if (dbc < 0) { dbc = 0; }
+  oa_broker_push(oa_dba, (uint32_t)(dba*100));
+  oa_broker_push(oa_dbc, (uint32_t)(dbc*100));
 }
 
 // vim: et:sw=2:ts=2

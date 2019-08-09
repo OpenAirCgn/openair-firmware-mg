@@ -68,14 +68,28 @@ const OATag = {
   oa_alpha_6: 6,
   oa_alpha_7: 7,
   oa_alpha_8: 8,
-  oa_bme_pressure_raw: 9,
-  oa_bme_pressure: 10,  //pascal
-  oa_bme_tmp_raw: 11,
-  oa_bme_tmp: 12,       //millikelvin
-  oa_bme_humidity_raw: 13,
-  oa_bme_humidity: 14,  //permille rh
-  oa_sds_pm25: 15,    //PM2.5 in ng/m3
-  oa_sds_pm10: 16
+  oa_bme0_pressure_raw: 9,
+  oa_bme0_pressure: 10,  //pascal
+  oa_bme0_temp_raw: 11,
+  oa_bme0_temp: 12,      //millikelvin
+  oa_bme0_humidity_raw: 13,
+  oa_bme0_humidity: 14,  //permille rh
+  oa_bme1_pressure_raw: 15,
+  oa_bme1_pressure: 16,  //pascal
+  oa_bme1_temp_raw: 17,
+  oa_bme1_temp: 18,      //millikelvin
+  oa_bme1_humidity_raw: 19,
+  oa_bme1_humidity: 20,  //permille rh
+  oa_sds_pm25: 21,       //PM2.5 in ng/m3
+  oa_sds_pm10: 22,       //PM10 in ng/m3
+  oa_si7006_temp_raw: 23,
+  oa_si7006_temp: 24,
+  oa_si7006_rh_raw: 25,
+  oa_si7006_rh: 26,
+  oa_mics4514_vred: 27,
+  oa_mics4514_vox: 28,
+  oa_dba: 29,            //millibel = decibel * 100
+  oa_dbc: 30             //millibel = decibel * 100
 };
 
 //example: {"ts":8,"device_id":"esp32_0AA8F0","entries":[{"ts":0,"tag":0,"value":0},{"ts":0,"tag":1,"value":0},{"ts":0,"tag":2,"value":0},{"ts":0,"tag":3,"value":0},{"ts":0,"tag":4,"value":0},{"ts":0,"tag":5,"value":0},{"ts":0,"tag":6,"value":0},{"ts":0,"tag":7,"value":0},{"ts":0,"tag":8,"value":0},{"ts":0,"tag":9,"value":0},{"ts":0,"tag":10,"value":0},{"ts":0,"tag":11,"value":0},{"ts":0,"tag":12,"value":0},{"ts":0,"tag":13,"value":0},{"ts":0,"tag":14,"value":0},{"ts":0,"tag":15,"value":0},{"ts":0,"tag":16,"value":0}]}
@@ -170,6 +184,14 @@ function updateUI() {
   document.querySelector("#as41").textContent = as41; 
   document.querySelector("#as42").textContent = as42; 
 
+  let dba = currentValues[OATag.oa_dba];
+  dba = dba ? (dba/100).toFixed(1) : "--";
+  document.querySelector("#dba").textContent = dba; 
+
+  let dbc = currentValues[OATag.oa_dbc];
+  dbc = dbc ? (dbc/100).toFixed(1) : "--";
+  document.querySelector("#dbc").textContent = dbc; 
+
   console.log("pm10: "+pm10+" pm25: "+pm25+" temp "+temperature+" press "+pressure+" humi "+humidity);
 }
 
@@ -248,6 +270,12 @@ function start() {
 <span id="as41" class="smallvalue">--</span>
 <span class="smallname">, </span>
 <span id="as42" class="smallvalue">--</span>
+</div>
+
+<div class="sensorblock">
+<span class="valname">Noisemeter:</span>
+<span id="dba" class="value">--</span><span class="unit">dBA</span>
+<span id="dbc" class="value">--</span><span class="unit">dBC</span>
 </div>
 
 

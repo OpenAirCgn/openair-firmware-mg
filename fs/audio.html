@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Environment noise</title>
+
+<style type="text/css">
+
+body, html {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: bold;
+  font-size:1.4em;
+}  
+.sensorblock {
+  margin:10px;
+  padding:20px;
+  border: 1px solid #666;
+  background-color:#ffc;
+}
+
+.graph {
+  width:100%;
+  height:100%;
+  background-color:white;
+
+}
+
+.valname {
+  color:#666;
+  display: inline-block;
+  min-width: 30%;
+
+}
+
+.unit {
+  padding-left:5px;
+}
+
+.smallname {
+  font-size:0.7em;
+  font-weight: normal;
+  font-style: italic;
+}
+
+.smallvalue {
+  font-size:0.7em;
+  font-weight: normal;
+  font-style: italic;
+}
+
+</style>
+
+<script type="text/javascript">
+  
+function pullValues() {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'rpc/OpenAir.Current', true);
+  xhr.responseType = 'json';
+  xhr.onload = () => {
+    var status = xhr.status;
+    if (status === 200) {
+      parseValues(xhr.response);
+    } else {
+      alert("error: "+status);
+    }
+  };
+  xhr.send();
+};
+
+const OATag = {
+  oa_alpha_1: 1,
+  oa_alpha_2: 2,
+  oa_alpha_3: 3,
+  oa_alpha_4: 4,
+  oa_alpha_5: 5,
+  oa_alpha_6: 6,
+  oa_alpha_7: 7,
+  oa_alpha_8: 8,
+  oa_bme0_pressure_raw: 9,
+  oa_bme0_pressure: 10,  //pascal
+  oa_bme0_temp_raw: 11,
+  oa_bme0_temp: 12,      //millikelvin
+  oa_bme0_humidity_raw: 13,
+  oa_bme0_humidity: 14,  //permille rh
+  oa_bme1_pressure_raw: 15,
+  oa_bme1_pressure: 16,  //pascal
+  oa_bme1_temp_raw: 17,
+  oa_bme1_temp: 18,      //millikelvin
+  oa_bme1_humidity_raw: 19,
+  oa_bme1_humidity: 20,  //permille rh
+  oa_sds_pm25: 21,       //PM2.5 in ng/m3
+  oa_sds_pm10: 22,       //PM10 in ng/m3
+  oa_si7006_temp_raw: 23,
+  oa_si7006_temp: 24,
+  oa_si7006_rh_raw: 25,
+  oa_si7006_rh: 26,
+  oa_mics4514_vred: 27,
+  oa_mics4514_vox: 28,
+  oa_dba: 29,            //millibel = decibel * 100
+  oa_dbc: 30             //millibel = decibel * 100
+};
+
+//example: {"ts":8,"device_id":"esp32_0AA8F0","entries":[{"ts":0,"tag":0,"value":0},{"ts":0,"tag":1,"value":0},{"ts":0,"tag":2,"value":0},{"ts":0,"tag":3,"value":0},{"ts":0,"tag":4,"value":0},{"ts":0,"tag":5,"value":0},{"ts":0,"tag":6,"value":0},{"ts":0,"tag":7,"value":0},{"ts":0,"tag":8,"value":0},{"ts":0,"tag":9,"value":0},{"ts":0,"tag":10,"value":0},{"ts":0,"tag":11,"value":0},{"ts":0,"tag":12,"value":0},{"ts":0,"tag":13,"value":0},{"ts":0,"tag":14,"value":0},{"ts":0,"tag":15,"value":0},{"ts":0,"tag":16,"value":0}]}
+
+let currentValues = [];
+const historySize = 100;
+let dbaHistory = [];
+let dbcHistory = [];
+
+function parseValues(json) {
+  if (json && json.entries) {
+    const entries = json.entries;
+    for (let key in entries) {
+      let tag = entries[key].tag;
+      let value = entries[key].value;
+      currentValues[tag] = value;
+    }
+  }
+  updateUI();
+};
+
+function updateUI() {
+
+  const dbaVal = currentValues[OATag.oa_dba];
+  const dba = dbaVal ? (dbaVal/100).toFixed(1) : "--";
+  document.querySelector("#dba").textContent = dba; 
+
+  const dbcVal = currentValues[OATag.oa_dbc];
+  const dbc = dbcVal ? (dbcVal/100).toFixed(1) : "--";
+  document.querySelector("#dbc").textContent = dbc; 
+
+  if ((!dba) || (dba < 0)) {
+    dba = 0;
+  }
+
+  if ((!dbc) || (dbc < 0)) {
+    dbc = 0;
+  }
+  dbaHistory.push(dba); //put copy into history
+  if (dbaHistory.length > historySize) {
+    dbaHistory.shift();
+  }
+  dbcHistory.push(dbc); //put copy into history
+  if (dbcHistory.length > historySize) {
+    dbcHistory.shift();
+  }
+
+  drawGraphs();
+}
+
+function drawGraphs() {
+  const c = document.querySelector("#dbgraph");
+  const w = c.clientWidth;
+  const h = 0.5*w;
+  c.width = w;
+  c.height = h;
+  const ctx = c.getContext("2d");
+
+  //db lines
+  ctx.beginPath();
+  ctx.strokeStyle = "#888888";
+  ctx.font = "15px Arial";
+  for (let i=1; i<=5; i++) {
+    let y = h - h*i/6;
+    ctx.moveTo(0,y);
+    ctx.lineTo(w,y);
+    ctx.fillText(`${i*20}dB`, 0, y);
+  }
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#00FF00";
+  let to = Math.min(historySize,dbaHistory.length);
+  for (let i=0; i<to; i++) {
+    let x = i*w/(historySize-1);
+    let val = dbaHistory[i];
+    let y = h - h*(val/120);
+    if (i==0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }    
+  }
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.strokeStyle = "#FF0000";
+  to = Math.min(historySize,dbcHistory.length);
+  for (let i=0; i<to; i++) {
+    let x = i*w/(historySize-1);
+    let val = dbcHistory[i];
+    let y = h - h*(val/120);
+    if (i==0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }    
+  }
+  ctx.stroke();
+
+
+}
+
+
+
+function start() {
+  pullValues();
+  window.setInterval(pullValues, 125);
+};
+
+</script>
+
+</head>
+<body onload="start()">
+
+<div class="sensorblock">
+<span class="valname">Environment noise:</span>
+<span id="dba" class="value">--</span><span class="unit">dBA</span>
+<span id="dbc" class="value">--</span><span class="unit">dBC</span>
+</div>
+
+<div class="sensorblock"><canvas class="graph" id="dbgraph"></canvas></div>
+
+
+
+
+</body>
+</html>

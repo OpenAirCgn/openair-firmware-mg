@@ -45,6 +45,8 @@ config_schema:
   - ["openair.sds011_en", "b", true, {title: "SDS011 PM sensor installed"}]
   - ["openair.sds011_interval", "i", 1000, {title: "poll interval (ms) of sds011 particulate measurement"}]
   - ["openair.si7006_en", "b", true, {title: "Si 7006 temp/humidity installed"}]
+  - ["openair.noisemeter_en", "b", true, {title: "Noisemeter dBA/dBC installed"}]
+  - ["openair.noisemeter_interval", "i", 125, {title: "poll interval (ms) of noisemeter measurement"}]
   - ["openair.si7006_interval", "i", 1000, {title: "poll interval (ms) of si7006 measurement"}]
   - ["openair.tick_interval", "i", 150, {title: "tick interval in ms"}]
   - ["openair.firehose_en", "b", true, {title: "enable immendiate udp dump of sensor values"}]

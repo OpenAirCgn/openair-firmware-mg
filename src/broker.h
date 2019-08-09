@@ -17,26 +17,28 @@ typedef enum {
   oa_bme0_pressure_raw,
   oa_bme0_pressure,  //pascal
   oa_bme0_temp_raw,
-  oa_bme0_temp,       //millikelvin
+  oa_bme0_temp,      //millikelvin
   oa_bme0_humidity_raw,
   oa_bme0_humidity,  //permille rh
   oa_bme1_pressure_raw,
   oa_bme1_pressure,  //pascal
   oa_bme1_temp_raw,
-  oa_bme1_temp,       //millikelvin
+  oa_bme1_temp,      //millikelvin
   oa_bme1_humidity_raw,
   oa_bme1_humidity,  //permille rh
-  oa_sds_pm25,    //PM2.5 in ng/m3
-  oa_sds_pm10,    //PM10 in ng/m3
+  oa_sds_pm25,       //PM2.5 in ng/m3
+  oa_sds_pm10,       //PM10 in ng/m3
   oa_si7006_temp_raw,
   oa_si7006_temp,
   oa_si7006_rh_raw,
   oa_si7006_rh,
   oa_mics4514_vred,
   oa_mics4514_vox,
+  oa_dba,            //millibel = decibel * 100
+  oa_dbc             //millibel = decibel * 100
 } oa_tag;
 
-#define NUM_VALUES 31
+#define NUM_VALUES 33
 
 
 typedef struct {
@@ -67,5 +69,7 @@ void bme_cb(uint8_t idx,
     uint32_t p_raw, float p, 
     uint32_t t_raw, float t, 
     uint32_t h_raw, float h);
+
+void noisemeter_cb(float dba, float dbc);
 
 // vim: et:sw=2:ts=2

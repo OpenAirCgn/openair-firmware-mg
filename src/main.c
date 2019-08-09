@@ -12,6 +12,7 @@
 #include "sds011.h"
 #include "si7006.h"
 #include "mics4514.h"
+#include "noisemeter.h"
 
 static void check_connection() {
   enum mgos_wifi_status status = mgos_wifi_get_status();
@@ -27,8 +28,15 @@ static void timer_cb(void *arg) {
 enum mgos_app_init_result mgos_app_init(void) {
   LOG(LL_INFO, ("OpenAir starting..."));
 
+
   openair_init();
   oa_broker_init();
+
+  if (mgos_sys_config_get_openair_noisemeter_en()) {
+    if (noisemeter_init(&noisemeter_cb)) {
+      noisemeter_start();
+    }
+  }
 
   if (mgos_sys_config_get_openair_quadsense_en()) {
     if (quadsense_init(&alpha_cb, &bme_cb)) {
