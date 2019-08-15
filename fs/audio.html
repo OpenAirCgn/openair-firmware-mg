@@ -9,7 +9,8 @@ body, html {
   font-family: Helvetica, Arial, sans-serif;
   font-weight: bold;
   font-size:1.4em;
-}  
+}
+
 .sensorblock {
   margin:10px;
   padding:20px;
@@ -47,10 +48,22 @@ body, html {
   font-style: italic;
 }
 
+.dba-label {
+  background-color: blueviolet;
+  margin-left: 8px;
+  padding-right: 4px;
+}
+
+.dbc-label {
+  background-color: orange;
+  margin-left: 8px;
+  padding-right: 4px;
+}
+
 </style>
 
 <script type="text/javascript">
-  
+
 function pullValues() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'rpc/OpenAir.Current', true);
@@ -122,11 +135,11 @@ function updateUI() {
 
   const dbaVal = currentValues[OATag.oa_dba];
   const dba = dbaVal ? (dbaVal/100).toFixed(1) : "--";
-  document.querySelector("#dba").textContent = dba; 
+  document.querySelector("#dba").textContent = dba;
 
   const dbcVal = currentValues[OATag.oa_dbc];
   const dbc = dbcVal ? (dbcVal/100).toFixed(1) : "--";
-  document.querySelector("#dbc").textContent = dbc; 
+  document.querySelector("#dbc").textContent = dbc;
 
   if ((!dba) || (dba < 0)) {
     dba = 0;
@@ -168,7 +181,7 @@ function drawGraphs() {
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.strokeStyle = "#00FF00";
+  ctx.strokeStyle = "blueviolet";
   let to = Math.min(historySize,dbaHistory.length);
   for (let i=0; i<to; i++) {
     let x = i*w/(historySize-1);
@@ -178,12 +191,12 @@ function drawGraphs() {
       ctx.moveTo(x, y);
     } else {
       ctx.lineTo(x, y);
-    }    
+    }
   }
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.strokeStyle = "#FF0000";
+  ctx.strokeStyle = "orange";
   to = Math.min(historySize,dbcHistory.length);
   for (let i=0; i<to; i++) {
     let x = i*w/(historySize-1);
@@ -193,7 +206,7 @@ function drawGraphs() {
       ctx.moveTo(x, y);
     } else {
       ctx.lineTo(x, y);
-    }    
+    }
   }
   ctx.stroke();
 
@@ -214,8 +227,8 @@ function start() {
 
 <div class="sensorblock">
 <span class="valname">Environment noise:</span>
-<span id="dba" class="value">--</span><span class="unit">dBA</span>
-<span id="dbc" class="value">--</span><span class="unit">dBC</span>
+<span id="dba" class="value">--</span><span class="unit dba-label">dBA</span>
+<span id="dbc" class="value">--</span><span class="unit dbc-label">dBC</span>
 </div>
 
 <div class="sensorblock"><canvas class="graph" id="dbgraph"></canvas></div>
