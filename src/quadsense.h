@@ -12,7 +12,11 @@ typedef void (*alphasense_cb) (
     int alpha5,
     int alpha6,
     int alpha7,
-    int alpha8
+    int alpha8,
+    int ppb1,
+    int ppb2,
+    int ppb3,
+    int ppb4
     );
 
 typedef void (*bme280_cb) (

@@ -150,7 +150,12 @@ void alpha_cb(
     int alpha5,
     int alpha6,
     int alpha7,
-    int alpha8
+    int alpha8,
+    int ppb1,
+    int ppb2,
+    int ppb3,
+    int ppb4
+
     ) {
   oa_broker_push(oa_alpha_1, alpha1);
   oa_broker_push(oa_alpha_2, alpha2);
@@ -160,6 +165,10 @@ void alpha_cb(
   oa_broker_push(oa_alpha_6, alpha6);
   oa_broker_push(oa_alpha_7, alpha7);
   oa_broker_push(oa_alpha_8, alpha8);
+  oa_broker_push(oa_alpha_1_ppb, ppb1);
+  oa_broker_push(oa_alpha_2_ppb, ppb2);
+  oa_broker_push(oa_alpha_3_ppb, ppb3);
+  oa_broker_push(oa_alpha_4_ppb, ppb4);
 }
 
 void bme_cb(uint8_t idx, 

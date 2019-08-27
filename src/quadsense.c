@@ -63,6 +63,74 @@ bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
 
 #define VREF 4.11
 
+/* returns ppb value for a given sensor.
+Calculations according to Alphasense AAN 803-05 */
+static int alpha_calc(int idx) {
+  int weAdc, aeAdc, algoIdx, weZero, aeZero, weSens, gain1, gain2, weEZero, aeEZero;
+  switch (idx) {
+    case 1:
+      weAdc = adc_values[0];
+      aeAdc = adc_values[1];
+      weZero = mgos_sys_config_get_quadsense_alpha1_wezero();
+      aeZero = mgos_sys_config_get_quadsense_alpha1_aezero();
+      weSens = mgos_sys_config_get_quadsense_alpha1_wesens();
+      gain1 = mgos_sys_config_get_quadsense_alpha1_gain1();
+      gain2 = mgos_sys_config_get_quadsense_alpha1_gain2();
+      weEZero = mgos_sys_config_get_quadsense_alpha1_ewezero();
+      aeEZero = mgos_sys_config_get_quadsense_alpha1_eaezero();
+      algoIdx = mgos_sys_config_get_quadsense_alpha1_algo();
+      break;
+    case 2:
+      weAdc = adc_values[2];
+      aeAdc = adc_values[3];
+      weZero = mgos_sys_config_get_quadsense_alpha2_wezero();
+      aeZero = mgos_sys_config_get_quadsense_alpha2_aezero();
+      weSens = mgos_sys_config_get_quadsense_alpha2_wesens();
+      gain1 = mgos_sys_config_get_quadsense_alpha2_gain1();
+      gain2 = mgos_sys_config_get_quadsense_alpha2_gain2();
+      weEZero = mgos_sys_config_get_quadsense_alpha2_ewezero();
+      aeEZero = mgos_sys_config_get_quadsense_alpha2_eaezero();
+      algoIdx = mgos_sys_config_get_quadsense_alpha2_algo();
+      break;
+    case 3:
+      weAdc = adc_values[4];
+      aeAdc = adc_values[5];
+      weZero = mgos_sys_config_get_quadsense_alpha3_wezero();
+      aeZero = mgos_sys_config_get_quadsense_alpha3_aezero();
+      weSens = mgos_sys_config_get_quadsense_alpha3_wesens();
+      gain1 = mgos_sys_config_get_quadsense_alpha3_gain1();
+      gain2 = mgos_sys_config_get_quadsense_alpha3_gain2();
+      weEZero = mgos_sys_config_get_quadsense_alpha3_ewezero();
+      aeEZero = mgos_sys_config_get_quadsense_alpha3_eaezero();
+      algoIdx = mgos_sys_config_get_quadsense_alpha3_algo();
+      break;
+    case 4:
+      weAdc = adc_values[6];
+      aeAdc = adc_values[7];
+      weZero = mgos_sys_config_get_quadsense_alpha4_wezero();
+      aeZero = mgos_sys_config_get_quadsense_alpha4_aezero();
+      weSens = mgos_sys_config_get_quadsense_alpha4_wesens();
+      gain1 = mgos_sys_config_get_quadsense_alpha4_gain1();
+      gain2 = mgos_sys_config_get_quadsense_alpha4_gain2();
+      weEZero = mgos_sys_config_get_quadsense_alpha4_ewezero();
+      aeEZero = mgos_sys_config_get_quadsense_alpha4_eaezero();
+      algoIdx = mgos_sys_config_get_quadsense_alpha4_algo();
+      break;
+    default:
+      LOG(LL_ERROR, ("alpha_calc: Invalid index %i (must be 1-4)", idx));
+      return -1;
+  }
+  //obtain voltages in volts
+  float weu = 0.5*VREF*adc_values[2*(idx-1)]/65536.0;    //Volts
+  float aeu = 0.5*VREF*adc_values[2*(idx-1)+1]/65536.0;  //Volts
+  //compensate electronic zero offsets
+  float we = weu - (weEZero * 0.001);
+  float ae = aeu - (aeEZero * 0.001);
+
+
+  return 123; //TODO **************
+}
+
 static void alpha_tick(){
   if (alpha_initialized) {
     uint8_t chan;
@@ -74,6 +142,10 @@ static void alpha_tick(){
         for (int i=0; i<8; i++) {
           LOG(LL_DEBUG, ("Channel %i value %i - %fV", i, adc_values[i], 0.5*VREF*adc_values[i]/65536.0));
         }
+        uint32_t ppb1 = alpha_calc(1);
+        uint32_t ppb2 = alpha_calc(2);
+        uint32_t ppb3 = alpha_calc(3);
+        uint32_t ppb4 = alpha_calc(4);
         alpha_cb(
             adc_values[0],
             adc_values[1],
@@ -82,7 +154,8 @@ static void alpha_tick(){
             adc_values[4],
             adc_values[5],
             adc_values[6],
-            adc_values[7]
+            adc_values[7],
+            ppb1, ppb2, ppb3, ppb4
             );
       }
     } else {

@@ -35,10 +35,14 @@ typedef enum {
   oa_mics4514_vred,
   oa_mics4514_vox,
   oa_dba,            //millibel = decibel * 100
-  oa_dbc             //millibel = decibel * 100
+  oa_dbc,            //millibel = decibel * 100
+  oa_alpha_1_ppb,
+  oa_alpha_2_ppb,
+  oa_alpha_3_ppb,
+  oa_alpha_4_ppb
 } oa_tag;
 
-#define NUM_VALUES 33
+#define NUM_VALUES 37 /* 35? */
 
 
 typedef struct {
@@ -63,7 +67,11 @@ void alpha_cb(
     int alpha5,
     int alpha6,
     int alpha7,
-    int alpha8
+    int alpha8,
+    int ppb1,
+    int ppb2,
+    int ppb3,
+    int ppb4
     ) ;
 void bme_cb(uint8_t idx, 
     uint32_t p_raw, float p, 
