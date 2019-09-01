@@ -74,7 +74,7 @@ float alphaCalculatePPM_(AlphaSensorType sensor, AlphaTempCompAlgorithm type, fl
 @param sensor sensor type
 @param celsius temperature in degrees celsius
 @param weu uncompensated working electrode value
-@param aeu uncompensated aux electrode value
+@param weu uncompensated aux electrode value
 @param wee working electrode electronic offset
 @param aee aux electrode electronic offset
 @param we0 working electrode zero
@@ -82,4 +82,5 @@ float alphaCalculatePPM_(AlphaSensorType sensor, AlphaTempCompAlgorithm type, fl
 @param sensitivity sensor sensitivity
 @return ppm value
  */
+>>>>>>> b2fd54715bebc4f3938597c03393650051ca4795
 float alphaCalculatePPM(AlphaSensorType sensor, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0, float sensitivity);
