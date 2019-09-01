@@ -2,6 +2,7 @@
 #include "ltc2497.h"
 #include "bme280.h"
 #include "openairboard.h"
+#include "alphasense.h"
 
 #include "stdio.h"
 
@@ -67,6 +68,7 @@ bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
 Calculations according to Alphasense AAN 803-05 */
 static int alpha_calc(int idx) {
   int weAdc, aeAdc, algoIdx, weZero, aeZero, weSens, gain1, gain2, weEZero, aeEZero;
+  AlphaSensorType type;
   switch (idx) {
     case 1:
       weAdc = adc_values[0];
@@ -79,6 +81,7 @@ static int alpha_calc(int idx) {
       weEZero = mgos_sys_config_get_quadsense_alpha1_ewezero();
       aeEZero = mgos_sys_config_get_quadsense_alpha1_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha1_algo();
+      type = mgos_sys_config_get_quadsense_alpha1_type();
       break;
     case 2:
       weAdc = adc_values[2];
@@ -91,6 +94,7 @@ static int alpha_calc(int idx) {
       weEZero = mgos_sys_config_get_quadsense_alpha2_ewezero();
       aeEZero = mgos_sys_config_get_quadsense_alpha2_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha2_algo();
+      type = mgos_sys_config_get_quadsense_alpha2_type();
       break;
     case 3:
       weAdc = adc_values[4];
@@ -103,6 +107,7 @@ static int alpha_calc(int idx) {
       weEZero = mgos_sys_config_get_quadsense_alpha3_ewezero();
       aeEZero = mgos_sys_config_get_quadsense_alpha3_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha3_algo();
+      type = mgos_sys_config_get_quadsense_alpha3_type();
       break;
     case 4:
       weAdc = adc_values[6];
@@ -115,6 +120,7 @@ static int alpha_calc(int idx) {
       weEZero = mgos_sys_config_get_quadsense_alpha4_ewezero();
       aeEZero = mgos_sys_config_get_quadsense_alpha4_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha4_algo();
+      type = mgos_sys_config_get_quadsense_alpha4_type();
       break;
     default:
       LOG(LL_ERROR, ("alpha_calc: Invalid index %i (must be 1-4)", idx));
