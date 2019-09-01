@@ -150,3 +150,12 @@ float alphaCompensateTemperature(AlphaSensorType sensor, AlphaTempCompAlgorithm 
 float alphaCalculatePPM(AlphaSensorType sensor, AlphaTempCompAlgorithm type, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0, float sensitivity) {
   return alphaCompensateTemperature(sensor, type, celsius, weu, aeu, wee, aee, we0, ae0) * sensitivity;
 }
+
+
+float alphaCalculatePPM(AlphaSensorType sensor, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0, float sensitivity) {
+
+	AlphaTempCompAlgorithm algo = alphaRecommendedAlgorithmForSensor(sensor);
+  	return alphaCompensateTemperature(sensor, algo, celsius, weu, aeu, wee, aee, we0, ae0) * sensitivity;
+
+
+}

@@ -53,7 +53,8 @@ float alphaCompensationFactor(AlphaSensorType sensor, AlphaTempCompAlgorithm typ
  */
 float alphaCompensateTemperature(AlphaSensorType sensor, AlphaTempCompAlgorithm type, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0);
 
-/** calculate a gas concentration from sensor values
+/** calculate a gas concentration from sensor values,
+ * with control over the temp compensation alorithm used.
 @param sensor sensor type
 @param type compensation type
 @param celsius temperature in degrees celsius
@@ -67,3 +68,18 @@ float alphaCompensateTemperature(AlphaSensorType sensor, AlphaTempCompAlgorithm 
 @return ppm value
  */
 float alphaCalculatePPM(AlphaSensorType sensor, AlphaTempCompAlgorithm type, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0, float sensitivity);
+
+/** calculate a gas concentration from sensor values
+ * using the recommended algorithm
+@param sensor sensor type
+@param celsius temperature in degrees celsius
+@param weu uncompensated working electrode value
+@param weu uncompensated aux electrode value
+@param wee working electrode electronic offset
+@param aee aux electrode electronic offset
+@param we0 working electrode zero
+@param ae0 aux electrode zero
+@param sensitivity sensor sensitivity
+@return ppm value
+ */
+float alphaCalculatePPM(AlphaSensorType sensor, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0, float sensitivity);
