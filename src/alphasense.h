@@ -82,5 +82,4 @@ float alphaCalculatePPM_(AlphaSensorType sensor, AlphaTempCompAlgorithm type, fl
 @param sensitivity sensor sensitivity
 @return ppm value
  */
->>>>>>> b2fd54715bebc4f3938597c03393650051ca4795
 float alphaCalculatePPM(AlphaSensorType sensor, float celsius, float weu, float aeu, float wee, float aee, float we0, float ae0, float sensitivity);
