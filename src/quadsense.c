@@ -67,58 +67,58 @@ bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
 /* returns ppb value for a given sensor.
 Calculations according to Alphasense AAN 803-05 */
 static int alpha_calc(int idx) {
-  int weAdc, aeAdc, algoIdx, weZero, aeZero, weSens, gain1, gain2, weEZero, aeEZero;
+  int weAdc, aeAdc, algoIdx, we0, ae0, weSens, gain, sensitivity, wee, aee;
   AlphaSensorType type;
   switch (idx) {
     case 1:
       weAdc = adc_values[0];
       aeAdc = adc_values[1];
-      weZero = mgos_sys_config_get_quadsense_alpha1_wezero();
-      aeZero = mgos_sys_config_get_quadsense_alpha1_aezero();
+      we0 = mgos_sys_config_get_quadsense_alpha1_wezero();
+      ae0 = mgos_sys_config_get_quadsense_alpha1_aezero();
       weSens = mgos_sys_config_get_quadsense_alpha1_wesens();
-      gain1 = mgos_sys_config_get_quadsense_alpha1_gain1();
-      gain2 = mgos_sys_config_get_quadsense_alpha1_gain2();
-      weEZero = mgos_sys_config_get_quadsense_alpha1_ewezero();
-      aeEZero = mgos_sys_config_get_quadsense_alpha1_eaezero();
+      gain = mgos_sys_config_get_quadsense_alpha1_gain();
+      sensitivity = mgos_sys_config_get_quadsense_alpha1_sensitivity();
+      wee = mgos_sys_config_get_quadsense_alpha1_ewezero();
+      aee = mgos_sys_config_get_quadsense_alpha1_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha1_algo();
       type = mgos_sys_config_get_quadsense_alpha1_type();
       break;
     case 2:
       weAdc = adc_values[2];
       aeAdc = adc_values[3];
-      weZero = mgos_sys_config_get_quadsense_alpha2_wezero();
-      aeZero = mgos_sys_config_get_quadsense_alpha2_aezero();
+      we0 = mgos_sys_config_get_quadsense_alpha2_wezero();
+      ae0 = mgos_sys_config_get_quadsense_alpha2_aezero();
       weSens = mgos_sys_config_get_quadsense_alpha2_wesens();
-      gain1 = mgos_sys_config_get_quadsense_alpha2_gain1();
-      gain2 = mgos_sys_config_get_quadsense_alpha2_gain2();
-      weEZero = mgos_sys_config_get_quadsense_alpha2_ewezero();
-      aeEZero = mgos_sys_config_get_quadsense_alpha2_eaezero();
+      gain = mgos_sys_config_get_quadsense_alpha2_gain();
+      sensitivity = mgos_sys_config_get_quadsense_alpha2_sensitivity();
+      wee = mgos_sys_config_get_quadsense_alpha2_ewezero();
+      aee = mgos_sys_config_get_quadsense_alpha2_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha2_algo();
       type = mgos_sys_config_get_quadsense_alpha2_type();
       break;
     case 3:
       weAdc = adc_values[4];
       aeAdc = adc_values[5];
-      weZero = mgos_sys_config_get_quadsense_alpha3_wezero();
-      aeZero = mgos_sys_config_get_quadsense_alpha3_aezero();
+      we0 = mgos_sys_config_get_quadsense_alpha3_wezero();
+      ae0 = mgos_sys_config_get_quadsense_alpha3_aezero();
       weSens = mgos_sys_config_get_quadsense_alpha3_wesens();
-      gain1 = mgos_sys_config_get_quadsense_alpha3_gain1();
-      gain2 = mgos_sys_config_get_quadsense_alpha3_gain2();
-      weEZero = mgos_sys_config_get_quadsense_alpha3_ewezero();
-      aeEZero = mgos_sys_config_get_quadsense_alpha3_eaezero();
+      gain = mgos_sys_config_get_quadsense_alpha3_gain();
+      sensitivity = mgos_sys_config_get_quadsense_alpha3_sensitivity();
+      wee = mgos_sys_config_get_quadsense_alpha3_ewezero();
+      aee = mgos_sys_config_get_quadsense_alpha3_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha3_algo();
       type = mgos_sys_config_get_quadsense_alpha3_type();
       break;
     case 4:
       weAdc = adc_values[6];
       aeAdc = adc_values[7];
-      weZero = mgos_sys_config_get_quadsense_alpha4_wezero();
-      aeZero = mgos_sys_config_get_quadsense_alpha4_aezero();
+      we0 = mgos_sys_config_get_quadsense_alpha4_wezero();
+      ae0 = mgos_sys_config_get_quadsense_alpha4_aezero();
       weSens = mgos_sys_config_get_quadsense_alpha4_wesens();
-      gain1 = mgos_sys_config_get_quadsense_alpha4_gain1();
-      gain2 = mgos_sys_config_get_quadsense_alpha4_gain2();
-      weEZero = mgos_sys_config_get_quadsense_alpha4_ewezero();
-      aeEZero = mgos_sys_config_get_quadsense_alpha4_eaezero();
+      gain = mgos_sys_config_get_quadsense_alpha4_gain();
+      sensitivity = mgos_sys_config_get_quadsense_alpha4_sensitivity();
+      wee = mgos_sys_config_get_quadsense_alpha4_ewezero();
+      aee = mgos_sys_config_get_quadsense_alpha4_eaezero();
       algoIdx = mgos_sys_config_get_quadsense_alpha4_algo();
       type = mgos_sys_config_get_quadsense_alpha4_type();
       break;
@@ -129,12 +129,16 @@ static int alpha_calc(int idx) {
   //obtain voltages in volts
   float weu = 0.5*VREF*adc_values[2*(idx-1)]/65536.0;    //Volts
   float aeu = 0.5*VREF*adc_values[2*(idx-1)+1]/65536.0;  //Volts
-  //compensate electronic zero offsets
-  float we = weu - (weEZero * 0.001);
-  float ae = aeu - (aeEZero * 0.001);
 
+  //compensate electronic zero offsets -- TODO same as wee, aee?
+  // float we = weu - (wee * 0.001);
+  // float ae = aeu - (aee * 0.001);
 
-  return 123; //TODO **************
+  
+  float celcius = 20.0;
+
+  float ppm = alphaCalculatePPM(type, celcius, weu, aeu, wee, aee, we0, ae0, sensitivity);
+  return ppm;
 }
 
 static void alpha_tick(){

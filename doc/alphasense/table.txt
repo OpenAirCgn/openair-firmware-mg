@@ -1,0 +1,20 @@
+
+
+WE = Working Electrode
+AE = Auxiliary Electrode
+AFE = Analog Frontend
+ISB = Individual Sensor board
+
+Datasheet | Desc                                                  | csv     | csv name             | config name | cpp name |
+WEu       | uncorrected raw WE output                             | n/a     |                      | n/a         | weu      |
+AEu       | uncorrected raw AE output                             | n/a     |                      | n/a         | aeu      |
+WEc       | corrected WE output                                   | n/a     |                      | n/a         |          |             
+WEe       | WE electronic offset on the AFE or ISB                | 10 ?    | ELECTRONIC ZERO (WE) | ewezero     | wee      |
+AEe       | AE electronic offset on the AFE or ISB                | 11 ?    | ELECTRONIC ZERO (AUX)| eaezero     | aee      |
+WE0       | WE sensor zero, i.e. the sensor WE output in zero air | 6 ?     | WE Zero (mV)         | wezero      | we0      |
+AE0       | AE sensor zero, i.e. the sensor AE output in zero air | 7 ?     | Aux Zero (mV)        | aezero      | ae0      |
+WEt       | Total WE zero offset                                  | 6 + 10 ?| ??                   |             |          |
+AEt       | Total AE zero offset                                  | 7 + 11 ?| ??                   |             |          |
+WE sensitivity nA/ppb | . in csv nA/pp*m*                         | 8 !     | WE Sensor (nA/ppm)   | wesens      |          |
+WE sensiticity mV/ppb | .                                         | 9 !     | Sensitivity (mV/ppb) | sensitivity |          |
+?         |                                                       | 4 !     | Gain (mV/nA)         | gain        | gain     |
