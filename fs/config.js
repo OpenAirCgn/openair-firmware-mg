@@ -87,6 +87,8 @@ function configToString() {
 }
 
 let config = {} // this stores the retrieved configuration
+let filter = null
+let defaultFilter = ["openair", "quadsense", "wifi"]
 
 function clearInterface(msg=null) {
   
@@ -108,9 +110,11 @@ function _populateInterface(cfg) {
   let div = document.querySelector("#main");
   clearInterface()
   for (let childname of Object.keys(cfg)) {
-    let child = cfg[childname];
-    let ui = createObjectEntry(childname, cfg);
-    div.appendChild(ui);
+    if (filter === null || filter.includes(childname)) {
+      let child = cfg[childname];
+      let ui = createObjectEntry(childname, cfg);
+      div.appendChild(ui);
+    }
   }
 }
 
@@ -192,10 +196,16 @@ function populateInterface() {
 }
 
 
-async function main() {
+async function _main(cfg_to_show) {
   L("Main");
+  filter = cfg_to_show 
   await startCommunication();
   populateInterface();
+}
+
+async main() {
+		    let filter = window.location.search === "?advanced" ? null : defaultFilter
+		    _main(filter)
 }
 
 async function test() {
