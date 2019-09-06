@@ -126,7 +126,6 @@ uint8_t sds011_checksum(uint8_t* buf, uint8_t totalLen) {
 }
 
 void sds011_start(){
-
   int interval = mgos_sys_config_get_openair_sds011_interval();
   timer_id = mgos_set_timer(interval, MGOS_TIMER_REPEAT, sds011_tick, NULL);
 }

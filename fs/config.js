@@ -34,10 +34,7 @@ function createNumberEntry(name, cfg) {
 }
 
 function createObjectEntry(name, cfg, level = 1) {
-  // L(`${name} : ${level}`);
   let div = createNodeFromHTML(`<div class="cfg_object" id="${name}">`);
-  // let title = createNodeFromHTML(`<h${level}>${name}</h${level}>`);
-  //div.appendChild(title);
   let obj = cfg[name];
   let child_names = Object.keys(obj);
   let bools = [];
@@ -107,7 +104,6 @@ function clearInterface(msg=null) {
 
 // accessible so it can be called from test, below.
 function _populateInterface(cfg) {
-  L(cfg);
   config = cfg
   let div = document.querySelector("#main");
   clearInterface()
