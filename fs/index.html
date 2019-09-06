@@ -41,6 +41,8 @@ body, html {
 }
 
 </style>
+<!-- in desperate need for refactor, provides `generateVersionInfo` -->
+<script src="xmlreq_backend.js"></script>
 
 <script type="text/javascript">
   
@@ -239,6 +241,7 @@ function updateUI() {
 }
 
 function start() {
+  generateVersionInfo();
   pullValues();
   window.setInterval(pullValues, 2000);
 };
@@ -351,6 +354,13 @@ function start() {
 </div>
 
 
+<hr/>
+
+<center>
+	<small>
+		<div id="version_info"></div>
+	</small>
+</center>
 
 
 </body>

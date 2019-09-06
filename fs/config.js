@@ -3,7 +3,7 @@ let S = JSON.stringify;
 
 
 /************************************************************************
- * Interface
+ * Interface : the following code dynamically creates the ui.
  ***********************************************************************/
 
 function createNodeFromHTML(html) {
@@ -86,10 +86,16 @@ function configToString() {
     }
 }
 
-let config = {} // this stores the retrieved configuration
+// this stores the retrieved configuration
+// `save` see below only sends diffs back to the
+// device
+let config = {} 
 let filter = null
 let defaultFilter = ["openair", "quadsense", "wifi"]
 
+
+// used mainly for errors, clears the interface
+// and replaces it with the passed message.
 function clearInterface(msg=null) {
   
   let div = document.querySelector("#main");
@@ -118,6 +124,7 @@ function _populateInterface(cfg) {
   }
 }
 
+// compares the ui to the config values retrieved from the ui
 function diff(obj=config, key="") {
   function _diffObject(obj, key) {
     let keys = Object.keys(obj)
@@ -183,6 +190,7 @@ function save () {
   }
 }
 
+// resets the interface to the last retrieved values.
 function cancel () {
   _populateInterface(config)
 }
@@ -203,9 +211,9 @@ async function _main(cfg_to_show) {
   populateInterface();
 }
 
-async main() {
-		    let filter = window.location.search === "?advanced" ? null : defaultFilter
-		    _main(filter)
+async function main() {
+  let filter = window.location.search === "?advanced" ? null : defaultFilter
+  _main(filter)
 }
 
 async function test() {

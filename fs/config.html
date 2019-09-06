@@ -10,7 +10,11 @@
     <script src="config.js"></script>
 
     <script>
-	    window.onload = main
+	    window.onload = () => {
+		    main()
+		    generateVersionInfo()
+	    }
+
 	    
     </script>
 
@@ -25,5 +29,9 @@
 		<div><input type="button" value="cancel" onclick="cancel()"/></div>
 	</div>
     </form>
+    <hr/>
+    <center><small>
+    <div id="version_info"></div>
+    </small></center>
   </body>
 </html>
