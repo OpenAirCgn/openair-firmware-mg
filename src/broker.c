@@ -197,11 +197,27 @@ void bme_cb(uint8_t idx,
   }
 }
 
-void noisemeter_cb(float dba, float dbc) {
+void noisemeter_cb(float dba, float dbc, float dba_1s, 
+  float dba_5s, float dba_10s, float dba_30s, float dba_1m, float dba_3m,
+  float dba_5m) {
   if (dba < 0) { dba = 0; }
   if (dbc < 0) { dbc = 0; }
+  if (dba_1s < 0) { dba_1s = 0; }
+  if (dba_5s < 0) { dba_5s = 0; }
+  if (dba_10s < 0) { dba_10s = 0; }
+  if (dba_30s < 0) { dba_30s = 0; }
+  if (dba_1m < 0) { dba_1m = 0; }
+  if (dba_3m < 0) { dba_3m = 0; }
+  if (dba_5m < 0) { dba_5m = 0; }
   oa_broker_push(oa_dba, (uint32_t)(dba*100));
   oa_broker_push(oa_dbc, (uint32_t)(dbc*100));
+  oa_broker_push(oa_dba_1s, (uint32_t)(dba_1s*100));
+  oa_broker_push(oa_dba_5s, (uint32_t)(dba_5s*100));
+  oa_broker_push(oa_dba_10s, (uint32_t)(dba_10s*100));
+  oa_broker_push(oa_dba_30s, (uint32_t)(dba_30s*100));
+  oa_broker_push(oa_dba_1m, (uint32_t)(dba_1m*100));
+  oa_broker_push(oa_dba_3m, (uint32_t)(dba_3m*100));
+  oa_broker_push(oa_dba_5m, (uint32_t)(dba_5m*100));
 }
 
 // vim: et:sw=2:ts=2

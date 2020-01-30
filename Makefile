@@ -1,4 +1,5 @@
-PORT=--port /dev/cu.usbserial-DM01NFWV
+PORT=
+#PORT=--port /dev/cu.usbserial-DM01NFWV
 
 build/fw.zip: src/*
 	mos build --platform esp32 --local --no-libs-update --verbose

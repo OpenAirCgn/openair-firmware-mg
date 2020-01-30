@@ -60,6 +60,12 @@ body, html {
   padding-right: 4px;
 }
 
+.dbaavg-label {
+  background-color: olive;
+  margin-left: 8px;
+  padding-right: 4px;
+}
+
 </style>
 
 <script type="text/javascript">
@@ -109,7 +115,20 @@ const OATag = {
   oa_mics4514_vred: 27,
   oa_mics4514_vox: 28,
   oa_dba: 29,            //millibel = decibel * 100
-  oa_dbc: 30             //millibel = decibel * 100
+  oa_dbc: 30,             //millibel = decibel * 100
+  oa_alpha_1_ppb: 31,
+  oa_alpha_2_ppb: 32,
+  oa_alpha_3_ppb: 33,
+  oa_alpha_4_ppb: 34,
+  oa_dba_1s: 35,         //millibel = decibel * 100
+  oa_dba_5s: 36,         //millibel = decibel * 100
+  oa_dba_10s: 37,        //millibel = decibel * 100
+  oa_dba_30s: 38,        //millibel = decibel * 100
+  oa_dba_1m: 39,         //millibel = decibel * 100
+  oa_dba_3m: 40,         //millibel = decibel * 100
+  oa_dba_5m: 41          //millibel = decibel * 100
+
+
 };
 
 //example: {"ts":8,"device_id":"esp32_0AA8F0","entries":[{"ts":0,"tag":0,"value":0},{"ts":0,"tag":1,"value":0},{"ts":0,"tag":2,"value":0},{"ts":0,"tag":3,"value":0},{"ts":0,"tag":4,"value":0},{"ts":0,"tag":5,"value":0},{"ts":0,"tag":6,"value":0},{"ts":0,"tag":7,"value":0},{"ts":0,"tag":8,"value":0},{"ts":0,"tag":9,"value":0},{"ts":0,"tag":10,"value":0},{"ts":0,"tag":11,"value":0},{"ts":0,"tag":12,"value":0},{"ts":0,"tag":13,"value":0},{"ts":0,"tag":14,"value":0},{"ts":0,"tag":15,"value":0},{"ts":0,"tag":16,"value":0}]}
@@ -118,6 +137,8 @@ let currentValues = [];
 const historySize = 100;
 let dbaHistory = [];
 let dbcHistory = [];
+let dbaAvgHistory = [];
+let dbaAvgSelector = OATag.oa_dba_10s;
 
 function parseValues(json) {
   if (json && json.entries) {
@@ -141,6 +162,10 @@ function updateUI() {
   const dbc = dbcVal ? (dbcVal/100).toFixed(1) : "--";
   document.querySelector("#dbc").textContent = dbc;
 
+  const dbaAvgVal = currentValues[dbaAvgSelector];
+  const dbaAvg = dbaAvgVal ? (dbaAvgVal/100).toFixed(1) : "--";
+  document.querySelector("#dbaavg").textContent = dbaAvg;
+
   if ((!dba) || (dba < 0)) {
     dba = 0;
   }
@@ -148,13 +173,24 @@ function updateUI() {
   if ((!dbc) || (dbc < 0)) {
     dbc = 0;
   }
+
+  if ((!dbaAvg) || (dbaAvg < 0)) {
+    dbaAvg = 0;
+  }
+
   dbaHistory.push(dba); //put copy into history
   if (dbaHistory.length > historySize) {
     dbaHistory.shift();
   }
+
   dbcHistory.push(dbc); //put copy into history
   if (dbcHistory.length > historySize) {
     dbcHistory.shift();
+  }
+
+  dbaAvgHistory.push(dbaAvg); //put copy into history
+  if (dbaAvgHistory.length > historySize) {
+    dbaAvgHistory.shift();
   }
 
   drawGraphs();
@@ -181,8 +217,23 @@ function drawGraphs() {
   ctx.stroke();
 
   ctx.beginPath();
+  ctx.strokeStyle = "olive";
+  let to = Math.min(historySize,dbaAvgHistory.length);
+  for (let i=0; i<to; i++) {
+    let x = i*w/(historySize-1);
+    let val = dbaAvgHistory[i];
+    let y = h - h*(val/120);
+    if (i==0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+  }
+  ctx.stroke();
+
+  ctx.beginPath();
   ctx.strokeStyle = "blueviolet";
-  let to = Math.min(historySize,dbaHistory.length);
+  to = Math.min(historySize,dbaHistory.length);
   for (let i=0; i<to; i++) {
     let x = i*w/(historySize-1);
     let val = dbaHistory[i];
@@ -213,6 +264,18 @@ function drawGraphs() {
 
 }
 
+function dbaAvgSelectorChange(val) {
+  switch(val) {
+    case "1s": dbaAvgSelector = OATag.oa_dba_1s; break;
+    case "5s": dbaAvgSelector = OATag.oa_dba_5s; break;
+    case "10s": dbaAvgSelector = OATag.oa_dba_10s; break;
+    case "30s": dbaAvgSelector = OATag.oa_dba_30s; break;
+    case "1m": dbaAvgSelector = OATag.oa_dba_1m; break;
+    case "3m": dbaAvgSelector = OATag.oa_dba_3m; break;
+    case "5m": dbaAvgSelector = OATag.oa_dba_5m; break;
+    default:  break;
+  }
+}
 
 
 function start() {
@@ -229,6 +292,16 @@ function start() {
 <span class="valname">Environment noise:</span>
 <span id="dba" class="value">--</span><span class="unit dba-label">dBA</span>
 <span id="dbc" class="value">--</span><span class="unit dbc-label">dBC</span>
+<span id="dbaavg" class="value">--</span><span class="unit dbaavg-label">dBA avg</span>
+<select name="avgselector" id="avgselector" onchange="dbaAvgSelectorChange(this.value)">
+  <option value="1s">1 sec</option>
+  <option value="5s">5 sec</option>
+  <option value="10s" selected>10 sec</option>
+  <option value="30s">30 sec</option>
+  <option value="1m">1 minute</option>
+  <option value="3m">3 minutes</option>
+  <option value="5m">5 minutes</option>
+</select>
 </div>
 
 <div class="sensorblock"><canvas class="graph" id="dbgraph"></canvas></div>

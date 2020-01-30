@@ -39,10 +39,18 @@ typedef enum {
   oa_alpha_1_ppb,
   oa_alpha_2_ppb,
   oa_alpha_3_ppb,
-  oa_alpha_4_ppb
+  oa_alpha_4_ppb,
+  oa_dba_1s,         //millibel = decibel * 100
+  oa_dba_5s,         //millibel = decibel * 100
+  oa_dba_10s,        //millibel = decibel * 100
+  oa_dba_30s,        //millibel = decibel * 100
+  oa_dba_1m,         //millibel = decibel * 100
+  oa_dba_3m,         //millibel = decibel * 100
+  oa_dba_5m          //millibel = decibel * 100
+
 } oa_tag;
 
-#define NUM_VALUES 37 /* 35? */
+#define NUM_VALUES 42 /* 40? */
 
 
 typedef struct {
@@ -78,6 +86,8 @@ void bme_cb(uint8_t idx,
     uint32_t t_raw, float t, 
     uint32_t h_raw, float h);
 
-void noisemeter_cb(float dba, float dbc);
+void noisemeter_cb(float dba, float dbc, float dba_1s, 
+  float dba_5s, float dba_10s, float dba_30s, float dba_1m, float dba_3m,
+  float dba_5m);
 
 // vim: et:sw=2:ts=2

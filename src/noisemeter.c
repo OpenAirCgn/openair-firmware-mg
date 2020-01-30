@@ -16,10 +16,12 @@ bool noisemeter_init( noisemeter_callback n_cb ) {
 }
 
 void noisemeter_tick() {
-  float data[2] = { 0,0 };
-  bool ok = mgos_i2c_read(i2c, addr, (uint8_t*)data, 8, true);
+  float data[9] = { 0,0,0,0,0,0,0,0,0 };
+  bool ok = mgos_i2c_read(i2c, addr, (uint8_t*)data, 9*sizeof(float), true);
   if (ok && cb) {
-    cb(data[0],data[1]);
+    cb(data[0],data[1],data[2],
+       data[3],data[4],data[5],
+       data[6],data[7],data[8]);
   }
 }
 
