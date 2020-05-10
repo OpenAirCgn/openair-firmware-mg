@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.com/OpenAirCgn/openair-firmware-mg.svg?branch=master)](https://travis-ci.com/OpenAirCgn/openair-firmware-mg)
 # OpenAir Firmware
 
 ## Overview
