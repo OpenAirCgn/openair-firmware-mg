@@ -2,7 +2,7 @@
 
 
 static mics4514_cb mics_cb;
-static mgos_timer_id timer_id = NULL;
+static mgos_timer_id timer_id = (mgos_timer_id)0;
 
 static int VRED_PIN;
 static int VOX_PIN;

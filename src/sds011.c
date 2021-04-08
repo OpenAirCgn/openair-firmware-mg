@@ -7,7 +7,7 @@ static uint32_t pm25_accum = 0; //we sum up in ng/m3, reports are in 0.1ug/m3
 static uint32_t pm10_accum = 0; //we sum up in ng/m3, reports are in 0.1ug/m3
 static uint32_t num_measurements = 0;
 
-static mgos_timer_id timer_id = NULL;
+static mgos_timer_id timer_id = (mgos_timer_id)0;
 
 typedef enum {
   SDS011_SET_DATA_REPORTING_MODE = 2,

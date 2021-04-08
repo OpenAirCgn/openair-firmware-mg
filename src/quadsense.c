@@ -21,9 +21,9 @@ static int adc_values[8] = {0,0,0,0,0,0,0,0};
 static alphasense_cb alpha_cb;
 static bme280_cb bme_cb;
 
-static mgos_timer_id timer_id_alpha = NULL;
-static mgos_timer_id timer_id_bme0 = NULL;
-static mgos_timer_id timer_id_bme1 = NULL;
+static mgos_timer_id timer_id_alpha = (mgos_timer_id)0;
+static mgos_timer_id timer_id_bme0  = (mgos_timer_id)0;
+static mgos_timer_id timer_id_bme1  = (mgos_timer_id)0;
 
 //void quadsense_init() {
 bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
