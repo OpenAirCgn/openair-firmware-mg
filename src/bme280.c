@@ -28,7 +28,7 @@ bool bme280_init(BME280_Struct* bme, struct mgos_i2c *i2c, uint8_t idx) {
   bme->idx = idx;
   bool ok = bme280_read_calib(bme);  //TODO: ID must be set for new HW
   if (!ok) {
-    LOG(LL_ERROR, ("failed bme280_read_calib()"));
+    LOG(LL_ERROR, ("failed bme280_read_calib() idx: %d", idx));
     return ok;
   }
 

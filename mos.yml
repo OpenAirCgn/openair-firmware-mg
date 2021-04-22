@@ -34,7 +34,7 @@ config_schema:
   - ["openair.mics4514_pin_pre", "i", 27, {title: "MICS preheater pin"}]
   - ["openair.mics4514_pin_vox", "i", 34, {title: "MICS vox ADC pin"}]
   - ["openair.mics4514_pin_vred", "i", 35, {title: "MICS vred ADC pin"}]
-  - ["openair.quadsense_en", "b", false, {title: "enable quadsense gas measurement"}]
+  - ["openair.quadsense_en", "b", true, {title: "enable quadsense gas measurement"}]
   - ["openair.quadsense_interval", "i", 1000, {title: "poll interval (ms) of gas measurement"}]
   - ["openair.quadsense_bme0_en", "b", true, {title: "enable temp/hum/press sensor 0"}]
   - ["openair.quadsense_bme0_interval", "i", 1000, {title: "poll interval (ms) of bme0 measurement"}]

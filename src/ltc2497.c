@@ -44,3 +44,4 @@ bool ltc2497_read(struct mgos_i2c *i2c, uint8_t addr, uint8_t *outChan, int *out
   }
   return ok && haveData;
 }
+

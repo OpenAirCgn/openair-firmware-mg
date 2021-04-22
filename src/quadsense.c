@@ -14,6 +14,20 @@ static BME280_Struct bme0;
 static BME280_Struct bme1;
 
 static struct mgos_i2c *i2c;
+
+// Quadsense design changed and this needs to to be rethought ... There used to
+// be a configurable i2c addr pin, but this became irrelevant b/c Quadsense got
+// 2 BME280 Temp sensors and those only have two configurable addr.
+// Simultaneously, the addr configuration pins of the ADC got inverted, so the
+// old addr mapping of MOD1 => 0x16 MOD2 =>0x14 got swapped. The constants
+// below refer to the NEW mapping.
+// 
+// As a consequence: we can't have two Quadsense boards (at least not with 2
+// BME sensors each.) And we'll autodiscover the ADC addr.
+
+#define ADC_MOD1_ADDR 0x14
+#define ADC_MOD2_ADDR 0x16
+
 static uint8_t adc_addr = 0;
 static bool id1 = false;
 
@@ -51,12 +65,20 @@ bool quadsense_init( alphasense_cb a_cb, bme280_cb b_cb ) {
 
   if (mgos_sys_config_get_openair_quadsense_bme0_en()) {
     bme0_initialized = bme280_init(&bme0, i2c, 0);
-    LOG(LL_INFO, ("quadsense + bme0 initialized"));
+    if (bme0_initialized) {
+      LOG(LL_INFO, ("quadsense/bme0 initialized"));
+    } else {
+      LOG(LL_INFO, ("quadsense/bme0 initialization failed"));
+    }
   }
 
   if (mgos_sys_config_get_openair_quadsense_bme1_en()) {
     bme1_initialized = bme280_init(&bme1, i2c, 1);
-    LOG(LL_INFO, ("quadsense + bme1 initialized"));
+    if (bme1_initialized) {
+      LOG(LL_INFO, ("quadsense/bme1 initialized"));
+    } else {
+      LOG(LL_INFO, ("quadsense/bme1 initialization failed"));
+    }
   }
 
   return true;
@@ -169,7 +191,8 @@ static void alpha_tick(){
             );
       }
     } else {
-      LOG(LL_ERROR, ("ltc2497 read failed"));
+      LOG(LL_ERROR, ("ltc2497 read failed. switch addr: %d", adc_addr));
+      adc_addr = adc_addr == ADC_MOD1_ADDR ? ADC_MOD2_ADDR : ADC_MOD1_ADDR;
     }
   }
 }
@@ -189,18 +212,22 @@ static void bme_tick(int bmeNo){
   }
 }
 
+static int bme0_attempts = 3;
 static void bme0_tick(){
   if (bme0_initialized) { 
     bme_tick(0);
-  } else {
+  } else if (bme0_attempts != 0) {
     bme0_initialized = bme280_init(&bme0, i2c, 0);
+    --bme0_attempts;
   }
 }
+static int bme1_attempts = 3;
 static void bme1_tick(){
   if (bme1_initialized) { 
     bme_tick(1);
-  } else {
+  } else if (bme1_attempts != 0) {
     bme1_initialized = bme280_init(&bme1, i2c, 1);
+    --bme1_attempts;
   }
 }
 
