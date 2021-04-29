@@ -7,7 +7,7 @@ static uint32_t pm25_accum = 0; //we sum up in ng/m3, reports are in 0.1ug/m3
 static uint32_t pm10_accum = 0; //we sum up in ng/m3, reports are in 0.1ug/m3
 static uint32_t num_measurements = 0;
 
-static mgos_timer_id timer_id = NULL;
+static mgos_timer_id timer_id = (mgos_timer_id)NULL;
 
 typedef enum {
   SDS011_SET_DATA_REPORTING_MODE = 2,
@@ -78,17 +78,24 @@ void sds011_tick() {
   counter = (counter+1) % REPEAT_TICK;
 }
 
+#define SDS011_CMD_REPLY  0xC5
+#define SDS011_DATA_REPLY 0xC0
+
+#define SDS011_PACKET_SZ 10
+#define SDS011_PACKET_HEADER 0xAA
+#define SDS011_PACKET_DELIM 0xAB
+
 void sds011_uart_cb(int uart_no, void* arg) {
   size_t avail = mgos_uart_read_avail(uart_no);
-  uint8_t buf[100];
-  if (avail > 100) {
-    avail = 100;
+  uint8_t buf[SDS011_PACKET_SZ];
+  if (avail > SDS011_PACKET_SZ) {
+    avail = SDS011_PACKET_SZ;
   }
-  if (avail > 0) {
+  if (avail == SDS011_PACKET_SZ) {
     size_t read = mgos_uart_read(uart_no, buf, avail);
-    if (read == 10) {
-      if ((buf[0] == 0xaa) && (buf[9] == 0xab) && (buf[8] == sds011_checksum(buf, 10))) {
-        if (buf[1] == 0xc0) { //measurement
+    if (read == SDS011_PACKET_SZ) {
+      if ((buf[0] == SDS011_PACKET_HEADER) && (buf[9] == SDS011_PACKET_DELIM) && (buf[8] == sds011_checksum(buf, 10))) {
+        if (buf[1] == SDS011_DATA_REPLY) { //measurement
           int pm25 = buf[2] | (buf[3] << 8);
           int pm10 = buf[4] | (buf[5] << 8);
           LOG(LL_INFO, ("PM2.5 %i PM10 %i", pm25, pm10));
@@ -96,11 +103,11 @@ void sds011_uart_cb(int uart_no, void* arg) {
           pm10_accum += 100*pm10;
           num_measurements++;
         }
-        else if (buf[1] == 0xc5) { //measurement
+//        else if (buf[1] == SDS011_CMD_REPLY) { //measurement
 //          LOG(LL_INFO, ("Response %i", buf[2]));
-        }
+//        }
       }
-    }
+    } 
   }
 } 
 
