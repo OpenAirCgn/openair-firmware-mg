@@ -12,7 +12,7 @@ static struct mgos_i2c *i2c = NULL;
 
 static si7xxx_cb si7x_cb;
 
-static mgos_timer_id timer_id = NULL;
+static mgos_timer_id timer_id = (mgos_timer_id)NULL;
 
 bool si7006_init(si7xxx_cb si_cb) {
   si7x_cb = si_cb;

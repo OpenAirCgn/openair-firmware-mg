@@ -6,7 +6,7 @@ static bool noisemeter_initialized = false;
 static struct mgos_i2c *i2c;
 static uint16_t addr = 0x10;  //unshifted (alt: 0x20)
 static noisemeter_callback cb;
-static mgos_timer_id timer_id = NULL;
+static mgos_timer_id timer_id = (mgos_timer_id)NULL;
 
 bool noisemeter_init( noisemeter_callback n_cb ) {
   cb = n_cb;
