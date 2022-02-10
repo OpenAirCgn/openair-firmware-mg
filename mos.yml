@@ -1,6 +1,6 @@
 author: Press Every Key  
 description: OpenAirCgn Firmware
-version: 0.3
+version: 0.5.1
 
 libs_version: ${mos.version}
 modules_version: ${mos.version}
@@ -28,7 +28,7 @@ config_schema:
   - ["openair", "o", { title: "OpenAir config" }]
   - ["openair.eeprom_en", "b", false, {title: "EEPROM installed"}]
   - ["openair.fan_speed", "i", 255, {title: "Speed of circulation fan"}]
-  - ["openair.mics4514_en", "b", true, {title: "MICS installed"}]
+  - ["openair.mics4514_en", "b", false, {title: "MICS installed"}]
   - ["openair.mics4514_interval", "i", 1000, {title: "MICS interval (ms) in which to poll"}]
   - ["openair.mics4514_pin_en", "i", 14, {title: "MICS enable pin"}]
   - ["openair.mics4514_pin_pre", "i", 27, {title: "MICS preheater pin"}]

@@ -5,29 +5,29 @@
 
 #include "mgos_mongoose.h"
 
+#include "broker.h"
+#include "mics4514.h"
+#include "noisemeter.h"
 #include "openairboard.h"
 #include "quadsense.h"
 #include "sds011.h"
-#include "broker.h"
-#include "sds011.h"
 #include "si7006.h"
-#include "mics4514.h"
-#include "noisemeter.h"
 
 static void check_connection() {
   enum mgos_wifi_status status = mgos_wifi_get_status();
-  openair_setStatusPattern((status == MGOS_WIFI_IP_ACQUIRED) ? OA_BLINK_ONCE_PAUSE : OA_BLINK_TWICE_PAUSE);
+  openair_setStatusPattern((status == MGOS_WIFI_IP_ACQUIRED)
+                               ? OA_BLINK_ONCE_PAUSE
+                               : OA_BLINK_TWICE_PAUSE);
 }
 
 static void timer_cb(void *arg) {
-  (void) arg;
+  (void)arg;
   check_connection();
   openair_tick();
 }
 
 enum mgos_app_init_result mgos_app_init(void) {
   LOG(LL_INFO, ("OpenAir starting..."));
-
 
   openair_init();
   oa_broker_init();
@@ -56,11 +56,11 @@ enum mgos_app_init_result mgos_app_init(void) {
     }
   }
 
-  if (mgos_sys_config_get_openair_mics4514_en()) {
-    if (mics4514_init(&mics_cb)) {
-      mics4514_start();
-    }
-  }
+  //  if (mgos_sys_config_get_openair_mics4514_en()) {
+  //    if (mics4514_init(&mics_cb)) {
+  //      mics4514_start();
+  //    }
+  //  }
 
   int tick_interval = mgos_sys_config_get_openair_tick_interval();
   mgos_set_timer(tick_interval /* ms */, true /* repeat */, timer_cb, NULL);
